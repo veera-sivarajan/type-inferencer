@@ -131,20 +131,24 @@ fn left_replace(subs: &mut [Substitution], left: &Term, right: &Term) -> Vec<Sub
         return vec![];
     }
     
-    let (first, rest) = subs.split_at(1);
-    let first = first[0];
+    let (first, rest) = subs.split_at_mut(1);
+    let first = first.first().unwrap().clone();
     
     let var = first.var;
     let is = replace(&first.is, left, right);
     let mut result = vec![Substitution { var, is }];
-    result.extend(left_replace(&mut rest, left, right));
+    result.extend(left_replace(rest, left, right));
     result
 }
 
-fn extend_replace(left: &Term, right: &Term, subst: Vec<Substitution>) -> Vec<Substitution> {
-    
-
-
+fn extend_replace(left: &Term, right: &Term, subst: &mut [Substitution]) -> Vec<Substitution> {
+    if !left_occurs(right, left) {
+        let mut result = vec![Substitution { var: left.clone(), is: right.clone() }];
+        result.extend(left_replace(subst, left, right));
+        result
+    } else {
+        panic!("Cycle in substitution.")
+    }
 }
 
 fn lookup(term: &Term, subs: &[Substitution]) -> Option<Term> {
@@ -156,7 +160,7 @@ fn lookup(term: &Term, subs: &[Substitution]) -> Option<Term> {
     None
 }
 
-fn unify(consts: &mut Vec<Constraint>, subst: &mut Vec<Substitution>) -> Vec<Substitution> {
+fn unify(consts: &mut Vec<Constraint>, subst: &mut [Substitution]) -> Vec<Substitution> {
     if consts.len() < 2 {
         return subst.to_vec();
     }
@@ -169,12 +173,12 @@ fn unify(consts: &mut Vec<Constraint>, subst: &mut Vec<Substitution>) -> Vec<Sub
     let right = first.rhs.clone();
     match &left {
         Term::Var(c) => {
-            if let Some(bound) = lookup(&left, subst.as_ref()) {
+            if let Some(bound) = lookup(&left, subst) {
                 let mut new_consts = vec![Constraint::new(bound, right)];
                 new_consts.extend(rest.to_vec());
                 unify(&mut new_consts, subst)
             } else {
-                let mut result = extend_replace(&left, &right, subst.to_vec());
+                let mut result = extend_replace(&left, &right, subst);
                 unify(&mut rest.to_vec(), &mut result)
             }
         }
