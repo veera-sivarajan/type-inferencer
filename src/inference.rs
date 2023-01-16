@@ -101,6 +101,10 @@ pub struct Substitution {
     is: Term,
 }
 
+fn extend_replace(left: &Term, right: &Term, subst: Vec<Substitution>) -> Vec<Substitution> {
+    todo!()
+}
+
 fn unify(consts: &mut Vec<Constraint>, subst: &mut Vec<Substitution>) -> Vec<Substitution> {
     if consts.len() < 2 {
         return subst.to_vec();
@@ -119,7 +123,8 @@ fn unify(consts: &mut Vec<Constraint>, subst: &mut Vec<Substitution>) -> Vec<Sub
                 new_consts.extend(rest.to_vec());
                 return unify(&mut new_consts, subst);
             } else {
-                return unify(&mut rest.to_vec(), extend_replace(left, right, subst));
+                let mut result = extend_replace(&left, &right, subst.to_vec());
+                return unify(&mut rest.to_vec(), &mut result);
             }
         }
         _ => todo!(),
