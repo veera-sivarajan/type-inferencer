@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Eq, Hash, PartialEq, Clone)]
+#[derive(Eq, Debug, Hash, PartialEq, Clone)]
 pub enum Operation {
     Add,
     Sub,
@@ -40,7 +40,7 @@ impl FunType {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Expr {
     Number(f64),
     String(String),
@@ -52,7 +52,7 @@ pub enum Expr {
     Call(CallExp),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BinExp {
     pub left: Box<Expr>,
     pub operator: Operation,
@@ -69,7 +69,7 @@ impl BinExp {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct IfExp {
     pub condition: Box<Expr>,
     pub then: Box<Expr>,
@@ -86,7 +86,7 @@ impl IfExp {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct FunExp {
     pub argument: Box<Expr>,
     pub arg_type: Type,
@@ -103,7 +103,7 @@ impl FunExp {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CallExp {
     pub caller: Box<Expr>,
     pub callee: Box<Expr>,
