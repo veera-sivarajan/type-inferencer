@@ -40,7 +40,7 @@ impl FunType {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Expr {
     Number(f64),
     String(String),
@@ -52,7 +52,7 @@ pub enum Expr {
     Call(CallExp),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct BinExp {
     pub left: Box<Expr>,
     pub operator: Operation,
@@ -69,7 +69,7 @@ impl BinExp {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct IfExp {
     pub condition: Box<Expr>,
     pub then: Box<Expr>,
@@ -86,7 +86,7 @@ impl IfExp {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct FunExp {
     pub argument: Box<Expr>,
     pub arg_type: Type,
@@ -103,7 +103,7 @@ impl FunExp {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct CallExp {
     pub caller: Box<Expr>,
     pub callee: Box<Expr>,

@@ -1,6 +1,6 @@
 use crate::types::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Term {
     Expr(Expr),
     Var(char),
@@ -8,13 +8,13 @@ pub enum Term {
     Arrow(ArrowType),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ArrowType {
     domain: Box<Term>,
     range: Box<Term>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Constraint {
     lhs: Term,
     rhs: Term,
@@ -95,11 +95,33 @@ pub fn cons_gen(expr: &Expr) -> Vec<Constraint> {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
 pub struct Substitution {
     var: Term,
     is: Term,
 }
 
-fn unify(constraints: &[Constraint]) -> Vec<Substitution> {
-    todo!()
+fn unify(consts: &mut Vec<Constraint>, subst: &mut Vec<Substitution>) -> Vec<Substitution> {
+    if consts.len() < 2 {
+        return subst.to_vec();
+    }
+
+    let (first, rest) = consts.split_at(1);
+
+    let first = first.first().unwrap();
+
+    let left = first.lhs.clone();
+    let right = first.rhs.clone();
+    match &left {
+        Term::Var(c) => {
+            if subst.contains(&left) {
+                let mut new_consts = vec![Constraint::new(Term::Var(*c), right)];
+                new_consts.extend(rest.to_vec());
+                return unify(&mut new_consts, subst);
+            } else {
+                return unify(&mut rest.to_vec(), extend_replace(left, right, subst));
+            }
+        }
+        _ => todo!(),
+    }
 }
