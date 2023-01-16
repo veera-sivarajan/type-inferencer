@@ -105,6 +105,15 @@ fn extend_replace(left: &Term, right: &Term, subst: Vec<Substitution>) -> Vec<Su
     todo!()
 }
 
+fn lookup(term: &Term, subs: &[Substitution]) -> Option<Term> {
+    for s in subs {
+        if s.var == *term {
+            return Some(s.var.clone());
+        }
+    }
+    None
+}
+
 fn unify(consts: &mut Vec<Constraint>, subst: &mut Vec<Substitution>) -> Vec<Substitution> {
     if consts.len() < 2 {
         return subst.to_vec();
@@ -118,13 +127,13 @@ fn unify(consts: &mut Vec<Constraint>, subst: &mut Vec<Substitution>) -> Vec<Sub
     let right = first.rhs.clone();
     match &left {
         Term::Var(c) => {
-            if subst.contains(&left) {
-                let mut new_consts = vec![Constraint::new(Term::Var(*c), right)];
+            if let Some(bound) = lookup(&left, subst.as_ref()) {
+                let mut new_consts = vec![Constraint::new(bound, right)];
                 new_consts.extend(rest.to_vec());
-                return unify(&mut new_consts, subst);
+                unify(&mut new_consts, subst)
             } else {
                 let mut result = extend_replace(&left, &right, subst.to_vec());
-                return unify(&mut rest.to_vec(), &mut result);
+                unify(&mut rest.to_vec(), &mut result)
             }
         }
         _ => todo!(),
