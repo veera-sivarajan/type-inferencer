@@ -2,10 +2,10 @@ use crate::types::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Term {
-    Expr(Expr),
-    Var(char),
-    Num,
-    Arrow(ArrowType),
+    Expr(Expr), // variable
+    Var(char), // variable
+    Num, // constant
+    Arrow(ArrowType), // function application
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -101,10 +101,14 @@ pub struct Substitution {
     is: Term,
 }
 
-fn left_occurs(rhs: &Term, left: &Term) -> bool {
+fn occurs_check(rhs: &Term, left: &Term, subs: &mut [Substitution]) -> bool {
     match rhs {
+        Term::Var(_) | Term::Expr(_) if lookup(rhs, subs).is_some() => {
+            let value = lookup(rhs, subs).unwrap();
+            occurs_check(&value, left, subs)
+        }
         Term::Arrow(ArrowType { domain, range }) => {
-            left_occurs(domain, left) || left_occurs(range, left)
+            occurs_check(domain, left, subs) || occurs_check(range, left, subs)
         }
         _ => left == rhs,
     }
@@ -127,7 +131,7 @@ fn replace(term: &Term, left: &Term, right: &Term) -> Term {
 }
 
 fn left_replace(subs: &mut [Substitution], left: &Term, right: &Term) -> Vec<Substitution> {
-    if subs.len() < 2 {
+    if subs.is_empty() {
         return vec![];
     }
     
@@ -142,7 +146,7 @@ fn left_replace(subs: &mut [Substitution], left: &Term, right: &Term) -> Vec<Sub
 }
 
 fn extend_replace(left: &Term, right: &Term, subst: &mut [Substitution]) -> Vec<Substitution> {
-    if !left_occurs(right, left) {
+    if !occurs_check(right, left, subst) {
         let mut result = vec![Substitution { var: left.clone(), is: right.clone() }];
         result.extend(left_replace(subst, left, right));
         result
@@ -160,8 +164,8 @@ fn lookup(term: &Term, subs: &[Substitution]) -> Option<Term> {
     None
 }
 
-fn unify(consts: &mut [Constraint], subst: &mut [Substitution]) -> Vec<Substitution> {
-    if consts.len() < 2 {
+pub fn unify(consts: &mut [Constraint], subst: &mut [Substitution]) -> Vec<Substitution> {
+    if consts.is_empty() {
         return subst.to_vec();
     }
 
