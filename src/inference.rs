@@ -91,7 +91,15 @@ pub fn cons_gen(expr: &Expr) -> Vec<Constraint> {
             f_constraint.extend(consequent);
             f_constraint
         }
-
         _ => todo!(),
     }
+}
+
+pub struct Substitution {
+    var: Term,
+    is: Term,
+}
+
+fn unify(constraints: &[Constraint]) -> Vec<Substitution> {
+    todo!()
 }
