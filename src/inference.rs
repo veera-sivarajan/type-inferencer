@@ -160,28 +160,47 @@ fn lookup(term: &Term, subs: &[Substitution]) -> Option<Term> {
     None
 }
 
-fn unify(consts: &mut Vec<Constraint>, subst: &mut [Substitution]) -> Vec<Substitution> {
+fn unify(consts: &mut [Constraint], subst: &mut [Substitution]) -> Vec<Substitution> {
     if consts.len() < 2 {
         return subst.to_vec();
     }
 
-    let (first, rest) = consts.split_at(1);
+    let (first, rest) = consts.split_at_mut(1);
 
     let first = first.first().unwrap();
 
     let left = first.lhs.clone();
     let right = first.rhs.clone();
     match &left {
-        Term::Var(c) => {
+        Term::Var(_) | Term::Expr(_) => {
             if let Some(bound) = lookup(&left, subst) {
                 let mut new_consts = vec![Constraint::new(bound, right)];
                 new_consts.extend(rest.to_vec());
                 unify(&mut new_consts, subst)
             } else {
                 let mut result = extend_replace(&left, &right, subst);
-                unify(&mut rest.to_vec(), &mut result)
+                unify(rest, &mut result)
             }
         }
-        _ => todo!(),
+        Term::Num => {
+            match right {
+                Term::Num => unify(rest, subst),
+                _ => panic!("Unify number and something else."),
+            }
+        }
+        Term::Arrow(ArrowType { domain, range }) => {
+            match right {
+                Term::Arrow(a_type) => {
+                    let right_domain = a_type.domain;
+                    let right_range = a_type.range;
+                    let d_consts = Constraint::new(*domain.clone(), *right_domain);
+                    let r_consts = Constraint::new(*range.clone(), *right_range);
+                    let mut list = vec![d_consts, r_consts];
+                    list.extend(consts.to_owned());
+                    unify(&mut list, subst)
+                }
+                _ => panic!("Unify arrow and something else.")
+            }
+        }
     }
 }
