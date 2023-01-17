@@ -1,12 +1,18 @@
-use std::fmt;
 use crate::types::*;
+use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Term {
-    Expr(Expr), // variable
-    Var(char), // variable
-    Num, // constant
+    Expr(Expr),       // variable
+    Var(char),        // variable
+    Num,              // constant
     Arrow(ArrowType), // function application
+}
+
+impl Term {
+    fn is_ident(&self) -> bool {
+        matches!(self, Term::Expr(_) | Term::Var(_))
+    }
 }
 
 impl fmt::Display for Term {
@@ -121,14 +127,19 @@ impl fmt::Display for Substitution {
     }
 }
 
-fn occurs_check(rhs: &Term, left: &Term, subs: &mut [Substitution]) -> bool {
+fn occurs_check(
+    rhs: &Term,
+    left: &Term,
+    subs: &mut [Substitution],
+) -> bool {
     match rhs {
         Term::Var(_) | Term::Expr(_) if lookup(rhs, subs).is_some() => {
             let value = lookup(rhs, subs).unwrap();
             occurs_check(&value, left, subs)
         }
         Term::Arrow(ArrowType { domain, range }) => {
-            occurs_check(domain, left, subs) || occurs_check(range, left, subs)
+            occurs_check(domain, left, subs)
+                || occurs_check(range, left, subs)
         }
         _ => left == rhs,
     }
@@ -136,10 +147,12 @@ fn occurs_check(rhs: &Term, left: &Term, subs: &mut [Substitution]) -> bool {
 
 fn replace(term: &Term, left: &Term, right: &Term) -> Term {
     match term {
-        Term::Arrow(ArrowType { domain, range }) => Term::Arrow(ArrowType {
-            domain: Box::new(replace(domain, left, right)),
-            range: Box::new(replace(range, left, right)),
-        }),
+        Term::Arrow(ArrowType { domain, range }) => {
+            Term::Arrow(ArrowType {
+                domain: Box::new(replace(domain, left, right)),
+                range: Box::new(replace(range, left, right)),
+            })
+        }
         _ => {
             if term == left {
                 right.clone()
@@ -150,18 +163,32 @@ fn replace(term: &Term, left: &Term, right: &Term) -> Term {
     }
 }
 
-fn left_replace(subs: &[Substitution], left: &Term, right: &Term) -> Vec<Substitution> {
+fn left_replace(
+    subs: &[Substitution],
+    left: &Term,
+    right: &Term,
+) -> Vec<Substitution> {
     let mut result = vec![];
     for sub in subs {
         let new_is = replace(&sub.is, left, right);
-        result.push(Substitution { var: sub.var.clone(), is: new_is });
+        result.push(Substitution {
+            var: sub.var.clone(),
+            is: new_is,
+        });
     }
     result
 }
 
-fn extend_replace(left: &Term, right: &Term, subst: &mut [Substitution]) -> Vec<Substitution> {
+fn extend_replace(
+    left: &Term,
+    right: &Term,
+    subst: &mut [Substitution],
+) -> Vec<Substitution> {
     if !occurs_check(right, left, subst) {
-        let mut result = vec![Substitution { var: left.clone(), is: right.clone() }];
+        let mut result = vec![Substitution {
+            var: left.clone(),
+            is: right.clone(),
+        }];
         result.extend(left_replace(subst, left, right));
         result
     } else {
@@ -178,47 +205,68 @@ fn lookup(term: &Term, subs: &[Substitution]) -> Option<Term> {
     None
 }
 
-pub fn unify(consts: &mut [Constraint], subst: &mut [Substitution]) -> Vec<Substitution> {
-    if consts.is_empty() {
-        return subst.to_vec();
-    }
+// pub fn unify(
+//     consts: &mut [Constraint],
+//     subst: &mut [Substitution],
+// ) -> Vec<Substitution> {
+//     if consts.is_empty() {
+//         return subst.to_vec();
+//     }
 
-    let (first, rest) = consts.split_at_mut(1);
+//     let (first, rest) = consts.split_at_mut(1);
 
-    let first = first.first().unwrap();
+//     let first = first.first().unwrap();
 
-    let left = first.lhs.clone();
-    let right = first.rhs.clone();
-    match &left {
-        Term::Var(_) | Term::Expr(_) => {
-            if let Some(bound) = lookup(&left, subst) {
-                let mut new_consts = vec![Constraint::new(bound, right)];
-                new_consts.extend(rest.to_vec());
-                unify(&mut new_consts, subst)
-            } else {
-                let mut result = extend_replace(&left, &right, subst);
-                unify(rest, &mut result)
-            }
-        }
-        Term::Num => {
-            match right {
-                Term::Num => unify(rest, subst),
-                _ => panic!("Unify number and something else."),
-            }
-        }
-        Term::Arrow(ArrowType { domain, range }) => {
-            match right {
-                Term::Arrow(a_type) => {
-                    let right_domain = a_type.domain;
-                    let right_range = a_type.range;
-                    let d_consts = Constraint::new(*domain.clone(), *right_domain);
-                    let r_consts = Constraint::new(*range.clone(), *right_range);
-                    let mut list = vec![d_consts, r_consts];
-                    list.extend(consts.to_owned());
-                    unify(&mut list, subst)
-                }
-                _ => panic!("Unify arrow and something else.")
-            }
-        }
-    }
+//     let left = first.lhs.clone();
+//     let right = first.rhs.clone();
+//     match &left {
+//         Term::Var(_) | Term::Expr(_) => {
+//             if let Some(bound) = lookup(&left, subst) {
+//                 let mut new_consts = vec![Constraint::new(bound, right)];
+//                 new_consts.extend(rest.to_vec());
+//                 unify(&mut new_consts, subst)
+//             } else {
+//                 let mut result = extend_replace(&left, &right, subst);
+//                 unify(rest, &mut result)
+//             }
+//         }
+//         Term::Num => match right {
+//             Term::Num => unify(rest, subst),
+//             _ => panic!("Unify number and something else."),
+//         },
+//         Term::Arrow(ArrowType { domain, range }) => match right {
+//             Term::Arrow(a_type) => {
+//                 let right_domain = a_type.domain;
+//                 let right_range = a_type.range;
+//                 let d_consts =
+//                     Constraint::new(*domain.clone(), *right_domain);
+//                 let r_consts =
+//                     Constraint::new(*range.clone(), *right_range);
+//                 let mut list = vec![d_consts, r_consts];
+//                 list.extend(consts.to_owned());
+//                 unify(&mut list, subst)
+//             }
+//             _ => panic!("Unify arrow and something else."),
+//         },
+//     }
+// }
+
+fn unify_helper(
+    left: &Term,
+    right: &Term,
+    subst: &mut Vec<Substitution>,
+) -> Vec<Substitution> {
+    todo!()
+}
+
+fn unify_variable(
+    var: &Term,
+    term: &Term,
+    subst: &mut Vec<Substitution>,
+) -> Vec<Substitution> {
+    todo!()
+}
+
+pub fn unify(constraints: &mut Vec<Constraint>) -> Vec<Substitution> {
+    todo!()
 }

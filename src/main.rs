@@ -15,23 +15,21 @@ fn main() {
     //     caller: Box::new(f),
     //     callee: Box::new(c1),
     // });
-    
+
     let r = Expr::Number(2.0);
     let l = Expr::Variable('x');
     let n = Expr::Binary(BinExp::new(l, Operation::Add, r));
 
-    
-    // let a = Expr::Variable('x');
-    // let f = Expr::Function(FunExp {
-    //     argument: Box::new(a),
-    //     arg_type: Type::Number,
-    //     body: Box::new(n),
-    // });
-    let mut constraints = inference::cons_gen(&n);
+    let a = Expr::Variable('x');
+    let f = Expr::Function(FunExp {
+        argument: Box::new(a),
+        arg_type: Type::Number,
+        body: Box::new(n),
+    });
+    let mut constraints = inference::cons_gen(&f);
     println!("Constraints: {constraints:#?}");
-    let mut subst: Vec<Substitution> = vec![];
-    let result = inference::unify(&mut constraints, &mut subst);
+    let result = inference::unify(&mut constraints);
     for r in result {
-        println!("{r}"); 
+        println!("{r}");
     }
 }
