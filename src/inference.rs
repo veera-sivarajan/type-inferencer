@@ -129,13 +129,13 @@ pub fn cons_gen(expr: &Expr) -> Vec<Constraint> {
             body_constraint.extend(consequent);
             body_constraint
         }
-        Expr::Call(CallExp { caller, callee }) => {
-            let mut f_constraint = cons_gen(caller);
-            let a_constraint = cons_gen(callee);
+        Expr::Call(CallExp { caller: function, callee: args }) => {
+            let mut f_constraint = cons_gen(function);
+            let a_constraint = cons_gen(args);
             let consequent = vec![Constraint::new(
-                Term::Expr(*caller.clone()),
+                Term::Expr(*function.clone()),
                 Term::Arrow(ArrowType {
-                    domain: Box::new(Term::Expr(*callee.clone())),
+                    domain: Box::new(Term::Expr(*args.clone())),
                     range: Box::new(Term::Expr(expr.clone())),
                 }),
             )];
@@ -180,7 +180,7 @@ fn occurs_check(left: &Term, right: &Term) -> bool {
 fn replace_all(
     left: &Term,
     right: &Term,
-    consts: &mut Vec<Constraint>,
+    consts: &mut [Constraint],
     subst: &mut Vec<Substitution>,
 ) {
     if !occurs_check(left, right) {
@@ -268,16 +268,14 @@ pub fn unify(
             replace_all(right, left, &mut new_rest, subst);
             subst.push(Substitution::new(right, left));
             return unify(&mut new_rest, subst);
-        } else if left.is_func() && right.is_func() {
+        } else if left.is_ident() && right.is_func() {
             match (left, right) {
-                (Term::Arrow(func_a), Term::Arrow(func_b)) => {
+                (Term::Expr(Expr::Function(function)), Term::Arrow(domain_and_range)) => {
                     let mut new_rest = rest.to_vec();
-                    if func_a == func_b {
-                        new_rest.push(Constraint::new(
-                            *func_a.domain.clone(),
-                            *func_b.domain.clone(),
-                        ));
-                    }
+                    new_rest.push(Constraint::new(
+                        Term::Expr(*function.argument.clone()),
+                        *domain_and_range.domain.clone(),
+                    ));
                     return unify(&mut new_rest.to_vec(), subst);
                 }
                 _ => unreachable!(),
