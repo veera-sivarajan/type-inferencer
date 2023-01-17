@@ -1,3 +1,4 @@
+use std::fmt;
 use crate::types::*;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -6,6 +7,19 @@ pub enum Term {
     Var(char), // variable
     Num, // constant
     Arrow(ArrowType), // function application
+}
+
+impl fmt::Display for Term {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Term::Var(c) => write!(f, "{c}"),
+            Term::Num => write!(f, "Number"),
+            Term::Arrow(a_type) => {
+                write!(f, "{} -> {}", a_type.domain, a_type.range)
+            }
+            Term::Expr(e) => write!(f, "{e}"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -101,6 +115,12 @@ pub struct Substitution {
     is: Term,
 }
 
+impl fmt::Display for Substitution {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} :: {}", self.var, self.is)
+    }
+}
+
 fn occurs_check(rhs: &Term, left: &Term, subs: &mut [Substitution]) -> bool {
     match rhs {
         Term::Var(_) | Term::Expr(_) if lookup(rhs, subs).is_some() => {
@@ -130,18 +150,12 @@ fn replace(term: &Term, left: &Term, right: &Term) -> Term {
     }
 }
 
-fn left_replace(subs: &mut [Substitution], left: &Term, right: &Term) -> Vec<Substitution> {
-    if subs.is_empty() {
-        return vec![];
+fn left_replace(subs: &[Substitution], left: &Term, right: &Term) -> Vec<Substitution> {
+    let mut result = vec![];
+    for sub in subs {
+        let new_is = replace(&sub.is, left, right);
+        result.push(Substitution { var: sub.var.clone(), is: new_is });
     }
-    
-    let (first, rest) = subs.split_at_mut(1);
-    let first = first.first().unwrap().clone();
-    
-    let var = first.var;
-    let is = replace(&first.is, left, right);
-    let mut result = vec![Substitution { var, is }];
-    result.extend(left_replace(rest, left, right));
     result
 }
 

@@ -52,11 +52,30 @@ pub enum Expr {
     Call(CallExp),
 }
 
+impl fmt::Display for Expr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Expr::Number(n) => write!(f, "{n}"),
+            Expr::Binary(e) => write!(f, "{e}"),
+            Expr::Function(e) => write!(f, "{e}"),
+            Expr::Call(e) => write!(f, "{e}"),
+            Expr::Variable(c) => write!(f, "{c}"),
+            _ => todo!(),
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct BinExp {
     pub left: Box<Expr>,
     pub operator: Operation,
     pub right: Box<Expr>,
+}
+
+impl fmt::Display for BinExp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} {} {}", self.left, self.operator, self.right)
+    }
 }
 
 impl BinExp {
@@ -103,10 +122,22 @@ impl FunExp {
     }
 }
 
+impl fmt::Display for FunExp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} => {}", self.argument, self.body)
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct CallExp {
     pub caller: Box<Expr>,
     pub callee: Box<Expr>,
+}
+
+impl fmt::Display for CallExp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}({})", self.caller, self.callee)
+    }
 }
 
 impl CallExp {

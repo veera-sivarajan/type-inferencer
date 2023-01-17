@@ -5,7 +5,6 @@ use crate::inference::*;
 use crate::types::*;
 
 fn main() {
-
     // let arg1 = Expr::Number(5.0);
     // let c1 = Expr::Call(CallExp {
     //     caller: Box::new(f.clone()),
@@ -22,15 +21,17 @@ fn main() {
     let n = Expr::Binary(BinExp::new(l, Operation::Add, r));
 
     
-    let a = Expr::Variable('x');
-    let f = Expr::Function(FunExp {
-        argument: Box::new(a),
-        arg_type: Type::Number,
-        body: Box::new(n),
-    });
-    let mut constraints = inference::cons_gen(&f);
+    // let a = Expr::Variable('x');
+    // let f = Expr::Function(FunExp {
+    //     argument: Box::new(a),
+    //     arg_type: Type::Number,
+    //     body: Box::new(n),
+    // });
+    let mut constraints = inference::cons_gen(&n);
     println!("Constraints: {constraints:#?}");
     let mut subst: Vec<Substitution> = vec![];
     let result = inference::unify(&mut constraints, &mut subst);
-    println!("{result:#?}"); 
+    for r in result {
+        println!("{r}"); 
+    }
 }
