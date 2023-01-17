@@ -253,20 +253,20 @@ pub fn unify(
         let (first, rest) = consts.split_at_mut(1);
         let first = first.first().unwrap();
 
-        let left = first.lhs.clone();
-        let right = first.rhs.clone();
+        let left = &first.lhs;
+        let right = &first.rhs;
 
         if left == right {
             unify(&mut rest.to_vec(), subst)
         } else if left.is_ident() {
             let mut new_rest = rest.to_vec();
-            replace_all(&left, &right, &mut new_rest, subst);
-            subst.push(Substitution::new(&left, &right));
+            replace_all(left, right, &mut new_rest, subst);
+            subst.push(Substitution::new(left, right));
             return unify(&mut new_rest, subst);
         } else if right.is_ident() {
             let mut new_rest = rest.to_vec();
-            replace_all(&right, &left, &mut new_rest, subst);
-            subst.push(Substitution::new(&right, &left));
+            replace_all(right, left, &mut new_rest, subst);
+            subst.push(Substitution::new(right, left));
             return unify(&mut new_rest, subst);
         } else if left.is_func() && right.is_func() {
             match (left, right) {
@@ -274,8 +274,8 @@ pub fn unify(
                     let mut new_rest = rest.to_vec();
                     if func_a == func_b {
                         new_rest.push(Constraint::new(
-                            *func_a.domain,
-                            *func_b.domain,
+                            *func_a.domain.clone(),
+                            *func_b.domain.clone(),
                         ));
                     }
                     return unify(&mut new_rest.to_vec(), subst);
