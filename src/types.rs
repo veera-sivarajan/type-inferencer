@@ -124,7 +124,7 @@ impl FunExp {
 
 impl fmt::Display for FunExp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{} => {}", self.argument, self.body)
+        write!(f, "(lambda({}) {})", self.argument, self.body)
     }
 }
 

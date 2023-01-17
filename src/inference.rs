@@ -184,7 +184,6 @@ fn replace_all(
     subst: &mut Vec<Substitution>,
 ) {
     if !occurs_check(left, right) {
-        // println!("Replacing {left} with {right}");
         for c in consts.iter_mut() {
             if let Term::Arrow(arrow) = &mut c.lhs {
                 if *arrow.domain == *left {
@@ -257,7 +256,6 @@ pub fn unify(
         let left = first.lhs.clone();
         let right = first.rhs.clone();
 
-        println!("let left = {left:?} and let right = {right:?}");
         if left == right {
             unify(&mut rest.to_vec(), subst)
         } else if left.is_ident() {
