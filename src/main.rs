@@ -17,7 +17,7 @@ fn main() {
     // });
 
     let r = Expr::Number(2.0);
-    let l = Expr::Variable('x');
+    let l = Expr::Variable('x'); 
     let n = Expr::Binary(BinExp::new(l, Operation::Add, r));
 
     let a = Expr::Variable('x');
