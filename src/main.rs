@@ -28,7 +28,7 @@ fn main() {
     });
     let mut constraints = inference::cons_gen(&f);
     for c in &constraints {
-        println!("Constraints: {c}");
+        println!("Constraints: {c:?}");
     }
     let mut substs = vec![];
     let result = inference::unify(&mut constraints, &mut substs);

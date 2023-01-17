@@ -192,15 +192,19 @@ fn replace_all(
         for c in consts {
             if c.lhs == *left {
                 c.lhs = right.clone();
-            } else if c.rhs == *left {
+            }
+
+            if c.rhs == *left {
                 c.rhs = right.clone();
             }
         }
-
+            
         for sub in subst {
             if sub.is == *left {
                 sub.is = right.clone();
-            } else if sub.var == *left {
+            }
+
+            if sub.var == *left {
                 sub.var = right.clone();
             }
         }
@@ -222,26 +226,30 @@ pub fn unify(
         let left = first.lhs.clone();
         let right = first.rhs.clone();
 
+        println!("let left = {left:?} and let right = {right:?}");
         if left == right {
-            subst.to_vec()
+            unify(&mut rest.to_vec(), subst)
         } else if left.is_ident() {
-            replace_all(&left, &right, &mut rest.to_vec(), subst);
+            let mut new_rest = rest.to_vec();
+            replace_all(&left, &right, &mut new_rest, subst);
             subst.push(Substitution::new(&left, &right));
-            return unify(&mut rest.to_vec(), subst);
+            return unify(&mut new_rest, subst);
         } else if right.is_ident() {
-            replace_all(&right, &left, &mut rest.to_vec(), subst);
+            let mut new_rest = rest.to_vec();
+            replace_all(&right, &left, &mut new_rest, subst);
             subst.push(Substitution::new(&right, &left));
-            return unify(&mut rest.to_vec(), subst);
+            return unify(&mut new_rest, subst);
         } else if left.is_func() && right.is_func() {
             match (left, right) {
                 (Term::Arrow(func_a), Term::Arrow(func_b)) => {
+                    let mut new_rest = rest.to_vec();
                     if func_a == func_b {
-                        consts.push(Constraint::new(
+                        new_rest.push(Constraint::new(
                             *func_a.domain,
                             *func_b.domain,
                         ));
                     }
-                    return unify(&mut consts.to_vec(), subst);
+                    return unify(&mut new_rest.to_vec(), subst);
                 }
                 _ => unreachable!(),
             }
