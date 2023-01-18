@@ -43,11 +43,11 @@ impl FunType {
 #[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub enum Expr {
     Number(i64),
-    String(String),
+    // String(String),
     Bool(bool),
     Variable(char),
     Binary(BinExp),
-    Conditional(IfExp),
+    // Conditional(IfExp),
     Function(FunExp),
     Call(CallExp),
 }
