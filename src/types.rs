@@ -112,6 +112,8 @@ pub struct FunExp {
     pub body: Box<Expr>,
 }
 
+impl Eq for FunExp {}
+
 impl FunExp {
     pub fn new(argument: Expr, arg_type: Type, body: Expr) -> Self {
         Self {

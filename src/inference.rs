@@ -1,7 +1,7 @@
 use crate::types::*;
 use std::fmt;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Term {
     Expr(Expr),       // variable
     Var(char),        // variable
@@ -9,17 +9,17 @@ pub enum Term {
     Arrow(ArrowType), // function application
 }
 
-impl PartialEq for Term {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Term::Expr(a), Term::Expr(b)) => a == b,
-            (Term::Var(a), Term::Var(b)) => a == b,
-            (Term::Num, Term::Num) => true,
-            (Term::Arrow(a), Term::Arrow(b)) => a == b,
-            _ => false,
-        }
-    }
-}
+// impl PartialEq for Term {
+//     fn eq(&self, other: &Self) -> bool {
+//         match (self, other) {
+//             (Term::Expr(a), Term::Expr(b)) => a == b,
+//             (Term::Var(a), Term::Var(b)) => a == b,
+//             (Term::Num, Term::Num) => true,
+//             (Term::Arrow(a), Term::Arrow(b)) => a == b,
+//             _ => false,
+//         }
+//     }
+// }
 
 impl Eq for Term {}
 
@@ -184,58 +184,64 @@ fn replace_all(
     subst: &mut [Substitution],
 ) {
     if !occurs_check(left, right) {
+        // println!("Constraints: {:#?}", consts);
         for c in consts.iter_mut() {
-            if let Term::Arrow(arrow) = &mut c.lhs {
-                if *arrow.domain == *left {
-                    arrow.domain = Box::new(right.clone());
+            if let Term::Arrow(func) = &mut c.lhs {
+                if *func.domain == *left {
+                    *func.domain = right.clone();
                 }
 
-                if *arrow.range == *left {
-                    arrow.range = Box::new(right.clone());
+                if *func.range == *left {
+                    *func.range = right.clone();
                 }
-            } else if let Term::Arrow(arrow) = &mut c.rhs {
-                if *arrow.domain == *left {
-                    arrow.domain = Box::new(right.clone());
+            }
+
+            
+            if let Term::Arrow(func) = &mut c.rhs {
+                if *func.domain == *left {
+                    *func.domain = right.clone();
                 }
 
-                if *arrow.range == *left {
-                    arrow.range = Box::new(right.clone());
+                if *func.range == *left {
+                    *func.range = right.clone();
                 }
-            } else {
-                if c.lhs == *left {
-                    c.lhs = right.clone();
-                }
-                if c.rhs == *left {
-                    c.rhs = right.clone();
-                }
+            }
+
+            
+            if c.lhs == *left {
+                // println!("Replacing {left} with {right}");
+                c.lhs = right.clone();
+            } else if c.rhs == *left {
+                // println!("Replacing {left} with {right}.");
+                c.rhs = right.clone();
             }
         }
 
         for sub in subst {
-            if let Term::Arrow(arrow) = &mut sub.var {
-                if *arrow.domain == *left {
-                    arrow.domain = Box::new(right.clone());
+            if let Term::Arrow(func) = &mut sub.var {
+                if *func.domain == *left {
+                    *func.domain = right.clone();
                 }
 
-                if *arrow.range == *left {
-                    arrow.range = Box::new(right.clone());
+                if *func.range == *left {
+                    *func.range = right.clone();
                 }
-            } else if let Term::Arrow(arrow) = &mut sub.is {
-                if *arrow.domain == *left {
-                    arrow.domain = Box::new(right.clone());
+            }
+
+            
+            if let Term::Arrow(func) = &mut sub.is {
+                if *func.domain == *left {
+                    *func.domain = right.clone();
                 }
 
-                if *arrow.range == *left {
-                    arrow.range = Box::new(right.clone());
+                if *func.range == *left {
+                    *func.range = right.clone();
                 }
-            } else {
-                if sub.is == *left {
-                    sub.is = right.clone();
-                }
-                
-                if sub.var == *left {
-                    sub.var = right.clone();
-                }
+            }
+            if sub.is == *left {
+                sub.is = right.clone();
+            }  else if sub.var == *left {
+                sub.var = right.clone();
             }
         }
     } else {
@@ -268,14 +274,16 @@ pub fn unify(
             replace_all(right, left, &mut new_rest, subst);
             subst.push(Substitution::new(right, left));
             return unify(&mut new_rest, subst);
-        } else if left.is_ident() && right.is_func() {
+        } else if left.is_func() && right.is_func() {
             match (left, right) {
-                (Term::Expr(Expr::Function(function)), Term::Arrow(domain_and_range)) => {
+                (Term::Arrow(a_one), Term::Arrow(a_two)) => {
+                    let (d_one, d_two) = (a_one.domain.clone(), a_two.domain.clone());
+                    let (r_one, r_two) = (a_one.range.clone(), a_two.range.clone());
                     let mut new_rest = rest.to_vec();
-                    new_rest.push(Constraint::new(
-                        Term::Expr(*function.argument.clone()),
-                        *domain_and_range.domain.clone(),
-                    ));
+                    new_rest.extend(vec![
+                        Constraint::new(*d_one, *d_two),
+                        Constraint::new(*r_one, *r_two),
+                    ]);
                     return unify(&mut new_rest.to_vec(), subst);
                 }
                 _ => unreachable!(),
