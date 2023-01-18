@@ -1,6 +1,7 @@
 use crate::types::*;
 
 use std::collections::HashMap;
+use std::fmt;
 
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub enum Term {
@@ -13,6 +14,20 @@ pub enum Term {
 impl Term {
     fn is_ident(&self) -> bool {
         matches!(self, Term::Expr(_) | Term::Var(_))
+    }
+}
+
+
+impl fmt::Display for Term {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Term::Var(c) => write!(f, "{c}"),
+            Term::Num => write!(f, "Number"),
+            Term::Arrow(a_type) => {
+                write!(f, "{} -> {}", a_type.domain, a_type.range)
+            }
+            Term::Expr(e) => write!(f, "{e}"),
+        }
     }
 }
 
@@ -35,8 +50,9 @@ impl Types {
     pub fn infer(expr: &Expr) -> Substitutions {
         let mut state = Self::default();
         state.generate_constraints(expr);
-        state.unify();
-        state.substitutions.clone()
+        // state.unify();
+        // state.substitutions.clone()
+        state.constraints.clone()
     }
 
     fn generate_constraints(&mut self, expr: &Expr) {
