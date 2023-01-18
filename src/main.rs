@@ -6,13 +6,13 @@ use crate::types::*;
 
 fn main() {
     let a = Expr::Variable('x');
-    // let r = Expr::Number(2.0);
-    let l = Expr::Variable('x'); 
-    // let n = Expr::Binary(BinExp::new(l, Operation::Add, r)); // x + 2
+    let r = Expr::Number(2.0);
+    let l = Expr::Variable('x');
+    let n = Expr::Binary(BinExp::new(l, Operation::Add, r)); // x + 2
     let f = Expr::Function(FunExp {
         argument: Box::new(a), // a = x
         arg_type: Type::Number,
-        body: Box::new(l), // x + 2
+        body: Box::new(n), // x + 2
     });
     let arg1 = Expr::Number(7.0);
     let c1 = Expr::Call(CallExp {

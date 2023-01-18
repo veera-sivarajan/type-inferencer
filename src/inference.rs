@@ -9,27 +9,11 @@ pub enum Term {
     Arrow(ArrowType), // function application
 }
 
-// impl PartialEq for Term {
-//     fn eq(&self, other: &Self) -> bool {
-//         match (self, other) {
-//             (Term::Expr(a), Term::Expr(b)) => a == b,
-//             (Term::Var(a), Term::Var(b)) => a == b,
-//             (Term::Num, Term::Num) => true,
-//             (Term::Arrow(a), Term::Arrow(b)) => a == b,
-//             _ => false,
-//         }
-//     }
-// }
-
 impl Eq for Term {}
 
 impl Term {
     fn is_ident(&self) -> bool {
         matches!(self, Term::Expr(_) | Term::Var(_))
-    }
-
-    fn is_func(&self) -> bool {
-        matches!(self, Term::Arrow(_))
     }
 }
 
@@ -129,7 +113,10 @@ pub fn cons_gen(expr: &Expr) -> Vec<Constraint> {
             body_constraint.extend(consequent);
             body_constraint
         }
-        Expr::Call(CallExp { caller: function, callee: args }) => {
+        Expr::Call(CallExp {
+            caller: function,
+            callee: args,
+        }) => {
             let mut f_constraint = cons_gen(function);
             let a_constraint = cons_gen(args);
             let consequent = vec![Constraint::new(
@@ -196,7 +183,6 @@ fn replace_all(
                 }
             }
 
-            
             if let Term::Arrow(func) = &mut c.rhs {
                 if *func.domain == *left {
                     *func.domain = right.clone();
@@ -207,7 +193,6 @@ fn replace_all(
                 }
             }
 
-            
             if c.lhs == *left {
                 // println!("Replacing {left} with {right}");
                 c.lhs = right.clone();
@@ -228,7 +213,6 @@ fn replace_all(
                 }
             }
 
-            
             if let Term::Arrow(func) = &mut sub.is {
                 if *func.domain == *left {
                     *func.domain = right.clone();
@@ -240,7 +224,7 @@ fn replace_all(
             }
             if sub.is == *left {
                 sub.is = right.clone();
-            }  else if sub.var == *left {
+            } else if sub.var == *left {
                 sub.var = right.clone();
             }
         }
@@ -274,11 +258,13 @@ pub fn unify(
             replace_all(right, left, &mut new_rest, subst);
             subst.push(Substitution::new(right, left));
             return unify(&mut new_rest, subst);
-        } else if left.is_func() && right.is_func() {
+        } else {
             match (left, right) {
                 (Term::Arrow(a_one), Term::Arrow(a_two)) => {
-                    let (d_one, d_two) = (a_one.domain.clone(), a_two.domain.clone());
-                    let (r_one, r_two) = (a_one.range.clone(), a_two.range.clone());
+                    let (d_one, d_two) =
+                        (a_one.domain.clone(), a_two.domain.clone());
+                    let (r_one, r_two) =
+                        (a_one.range.clone(), a_two.range.clone());
                     let mut new_rest = rest.to_vec();
                     new_rest.extend(vec![
                         Constraint::new(*d_one, *d_two),
@@ -286,11 +272,11 @@ pub fn unify(
                     ]);
                     return unify(&mut new_rest.to_vec(), subst);
                 }
-                _ => unreachable!(),
+                _ => {
+                    let msg = format!("{left} and {right} do not unify.");
+                    panic!("{msg}");
+                }
             }
-        } else {
-            let msg = format!("{left} and {right} do not unify.");
-            panic!("{msg}");
         }
     }
 }
