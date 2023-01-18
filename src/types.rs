@@ -59,7 +59,7 @@ impl fmt::Display for Expr {
             Expr::Binary(e) => write!(f, "{e}"),
             Expr::Function(e) => write!(f, "{e}"),
             Expr::Call(e) => write!(f, "{e}"),
-            Expr::Variable(c) => write!(f, "{c}"),
+            Expr::Variable(c) => write!(f, "Variable({c})"),
             _ => todo!(),
         }
     }

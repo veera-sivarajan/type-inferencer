@@ -50,6 +50,9 @@ impl Constraint {
 
 pub fn infer_types(expr: &Expr) -> Vec<Substitution> {
     let mut cons = generate_constraints(expr);
+    for c in &cons {
+        println!("Constraint: {c}");
+    }
     let mut subs = vec![];
     unify(&mut cons, &mut subs)
 }
@@ -268,7 +271,7 @@ impl fmt::Display for Substitution {
 impl fmt::Display for Term {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Term::Var(c) => write!(f, "{c}"),
+            Term::Var(c) => write!(f, "Var({c})"),
             Term::Num => write!(f, "Number"),
             Term::Arrow(a_type) => {
                 write!(f, "{} -> {}", a_type.domain, a_type.range)
