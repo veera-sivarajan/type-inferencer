@@ -181,7 +181,7 @@ fn replace_all(
     left: &Term,
     right: &Term,
     consts: &mut [Constraint],
-    subst: &mut Vec<Substitution>,
+    subst: &mut [Substitution],
 ) {
     if !occurs_check(left, right) {
         for c in consts.iter_mut() {
@@ -230,7 +230,7 @@ fn replace_all(
                 }
             } else {
                 if sub.is == *left {
-                sub.is = right.clone();
+                    sub.is = right.clone();
                 }
                 
                 if sub.var == *left {
