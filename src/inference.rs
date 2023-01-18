@@ -9,51 +9,22 @@ pub enum Term {
     Arrow(ArrowType), // function application
 }
 
-impl Eq for Term {}
-
 impl Term {
     fn is_ident(&self) -> bool {
         matches!(self, Term::Expr(_) | Term::Var(_))
     }
 }
 
-impl fmt::Display for Term {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Term::Var(c) => write!(f, "{c}"),
-            Term::Num => write!(f, "Number"),
-            Term::Arrow(a_type) => {
-                write!(f, "{} -> {}", a_type.domain, a_type.range)
-            }
-            Term::Expr(e) => write!(f, "{e}"),
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ArrowType {
     domain: Box<Term>,
     range: Box<Term>,
 }
 
-impl PartialEq for ArrowType {
-    fn eq(&self, other: &Self) -> bool {
-        self.domain == other.domain && self.range == other.range
-    }
-}
-
-impl Eq for ArrowType {}
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Constraint {
     lhs: Term,
     rhs: Term,
-}
-
-impl fmt::Display for Constraint {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{} = {}", self.lhs, self.rhs)
-    }
 }
 
 impl Constraint {
@@ -146,12 +117,6 @@ impl Substitution {
             var: var.clone(),
             is: is.clone(),
         }
-    }
-}
-
-impl fmt::Display for Substitution {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{} :: {}", self.var, self.is)
     }
 }
 
@@ -278,5 +243,33 @@ pub fn unify(
                 }
             }
         }
+    }
+}
+
+
+impl fmt::Display for Term {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Term::Var(c) => write!(f, "{c}"),
+            Term::Num => write!(f, "Number"),
+            Term::Arrow(a_type) => {
+                write!(f, "{} -> {}", a_type.domain, a_type.range)
+            }
+            Term::Expr(e) => write!(f, "{e}"),
+        }
+    }
+}
+
+                       
+impl fmt::Display for Constraint {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} = {}", self.lhs, self.rhs)
+    }
+}
+
+
+impl fmt::Display for Substitution {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} :: {}", self.var, self.is)
     }
 }
