@@ -21,11 +21,11 @@ fn main() {
         callee: Box::new(arg1),
     }); // ((lambda(x) x + 2) (5))
 
-    // println!("Input: {c1}");
-    // let mut constraints = inference::cons_gen(&c1);
-    // for c in &constraints {
-    //     println!("Constraints: {c}");
-    // }
+    println!("Input: {c1}");
+    let constraints = inference::cons_gen(&c1);
+    for c in &constraints {
+        println!("Constraints: {c:?}");
+    }
     // let mut substs = vec![];
     // let result = inference::unify(&mut constraints, &mut substs);
     // for r in result {
@@ -34,6 +34,6 @@ fn main() {
 
     let subs = infer::Types::infer(&c1);
     for (k, v) in subs {
-        println!("Sub {k} with {v}");
+        println!("Other Constraint: {k:?} with {v:?}");
     }
 }
