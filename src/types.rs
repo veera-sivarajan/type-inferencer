@@ -17,7 +17,7 @@ impl fmt::Display for Operation {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Type {
     Number,
     String,
@@ -25,7 +25,7 @@ pub enum Type {
     Function(FunType),
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub struct FunType {
     pub input: Box<Type>,
     pub output: Box<Type>,
@@ -40,9 +40,9 @@ impl FunType {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub enum Expr {
-    Number(f64),
+    Number(i64),
     String(String),
     Bool(bool),
     Variable(char),
@@ -65,7 +65,7 @@ impl fmt::Display for Expr {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct BinExp {
     pub left: Box<Expr>,
     pub operator: Operation,
@@ -88,7 +88,7 @@ impl BinExp {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub struct IfExp {
     pub condition: Box<Expr>,
     pub then: Box<Expr>,
@@ -105,14 +105,12 @@ impl IfExp {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub struct FunExp {
     pub argument: Box<Expr>,
     pub arg_type: Type,
     pub body: Box<Expr>,
 }
-
-impl Eq for FunExp {}
 
 impl FunExp {
     pub fn new(argument: Expr, arg_type: Type, body: Expr) -> Self {
@@ -130,7 +128,7 @@ impl fmt::Display for FunExp {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct CallExp {
     pub caller: Box<Expr>,
     pub callee: Box<Expr>,

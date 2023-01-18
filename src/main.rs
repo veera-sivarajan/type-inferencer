@@ -1,3 +1,4 @@
+mod infer;
 mod inference;
 mod types;
 
@@ -6,7 +7,7 @@ use crate::types::*;
 
 fn main() {
     let a = Expr::Variable('x');
-    let r = Expr::Number(2.0);
+    let r = Expr::Number(2);
     let l = Expr::Variable('x');
     let n = Expr::Binary(BinExp::new(l, Operation::Add, r)); // x + 2
     let f = Expr::Function(FunExp {
@@ -14,7 +15,7 @@ fn main() {
         arg_type: Type::Number,
         body: Box::new(n), // x + 2
     });
-    let arg1 = Expr::Number(7.0);
+    let arg1 = Expr::Number(10);
     let c1 = Expr::Call(CallExp {
         caller: Box::new(f),
         callee: Box::new(arg1),

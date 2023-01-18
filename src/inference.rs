@@ -246,7 +246,6 @@ pub fn unify(
     }
 }
 
-
 impl fmt::Display for Term {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -260,13 +259,11 @@ impl fmt::Display for Term {
     }
 }
 
-                       
 impl fmt::Display for Constraint {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{} = {}", self.lhs, self.rhs)
     }
 }
-
 
 impl fmt::Display for Substitution {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
