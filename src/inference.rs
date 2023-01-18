@@ -1,7 +1,7 @@
 use crate::types::*;
 use std::fmt;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub enum Term {
     Expr(Expr),       // variable
     Var(char),        // variable
@@ -15,10 +15,25 @@ impl Term {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub struct ArrowType {
     domain: Box<Term>,
     range: Box<Term>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Substitution {
+    var: Term,
+    is: Term,
+}
+
+impl Substitution {
+    fn new(var: &Term, is: &Term) -> Self {
+        Self {
+            var: var.clone(),
+            is: is.clone(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -33,8 +48,14 @@ impl Constraint {
     }
 }
 
-pub fn cons_gen(expr: &Expr) -> Vec<Constraint> {
-    match expr {
+pub fn infer_types(expr: &Expr) -> Vec<Substitution> {
+    let mut cons = generate_constraints(expr);
+    let mut subs = vec![];
+    unify(&mut cons, &mut subs)
+}
+
+fn generate_constraints(expr: &Expr) -> Vec<Constraint> {
+     match expr {
         Expr::Number(_) => {
             // When the expression is a number, we expect the type
             // of the expression to be numeric:
@@ -54,8 +75,8 @@ pub fn cons_gen(expr: &Expr) -> Vec<Constraint> {
             operator: _,
             right,
         }) => {
-            let mut left_constraint = cons_gen(left);
-            let right_constraint = cons_gen(right);
+            let mut left_constraint = generate_constraints(left);
+            let right_constraint = generate_constraints(right);
             let consequent = vec![
                 Constraint::new(Term::Expr(*left.clone()), Term::Num),
                 Constraint::new(Term::Expr(*right.clone()), Term::Num),
@@ -70,7 +91,7 @@ pub fn cons_gen(expr: &Expr) -> Vec<Constraint> {
             arg_type: _,
             body,
         }) => {
-            let mut body_constraint = cons_gen(body);
+            let mut body_constraint = generate_constraints(body);
             let Expr::Variable(a) = **argument else {
                 panic!("Function argument is not a variable.");
             };
@@ -88,8 +109,8 @@ pub fn cons_gen(expr: &Expr) -> Vec<Constraint> {
             caller: function,
             callee: args,
         }) => {
-            let mut f_constraint = cons_gen(function);
-            let a_constraint = cons_gen(args);
+            let mut f_constraint = generate_constraints(function);
+            let a_constraint = generate_constraints(args);
             let consequent = vec![Constraint::new(
                 Term::Expr(*function.clone()),
                 Term::Arrow(ArrowType {
@@ -105,20 +126,6 @@ pub fn cons_gen(expr: &Expr) -> Vec<Constraint> {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct Substitution {
-    var: Term,
-    is: Term,
-}
-
-impl Substitution {
-    fn new(var: &Term, is: &Term) -> Self {
-        Self {
-            var: var.clone(),
-            is: is.clone(),
-        }
-    }
-}
 
 fn occurs_check(left: &Term, right: &Term) -> bool {
     match left {
@@ -198,12 +205,12 @@ fn replace_all(
     }
 }
 
-pub fn unify(
+fn unify(
     consts: &mut Vec<Constraint>,
-    subst: &mut Vec<Substitution>,
+    subs: &mut Vec<Substitution>,
 ) -> Vec<Substitution> {
-    if consts.is_empty() {
-        subst.to_vec()
+        if consts.is_empty() {
+        subs.to_vec()
     } else {
         let (first, rest) = consts.split_at_mut(1);
         let first = first.first().unwrap();
@@ -212,17 +219,17 @@ pub fn unify(
         let right = &first.rhs;
 
         if left == right {
-            unify(&mut rest.to_vec(), subst)
+            unify(&mut rest.to_vec(), subs)
         } else if left.is_ident() {
             let mut new_rest = rest.to_vec();
-            replace_all(left, right, &mut new_rest, subst);
-            subst.push(Substitution::new(left, right));
-            return unify(&mut new_rest, subst);
+            replace_all(left, right, &mut new_rest, subs);
+            subs.push(Substitution::new(left, right));
+            return unify(&mut new_rest, subs);
         } else if right.is_ident() {
             let mut new_rest = rest.to_vec();
-            replace_all(right, left, &mut new_rest, subst);
-            subst.push(Substitution::new(right, left));
-            return unify(&mut new_rest, subst);
+            replace_all(right, left, &mut new_rest, subs);
+            subs.push(Substitution::new(right, left));
+            return unify(&mut new_rest, subs);
         } else {
             match (left, right) {
                 (Term::Arrow(a_one), Term::Arrow(a_two)) => {
@@ -235,26 +242,13 @@ pub fn unify(
                         Constraint::new(*d_one, *d_two),
                         Constraint::new(*r_one, *r_two),
                     ]);
-                    return unify(&mut new_rest.to_vec(), subst);
+                    return unify(&mut new_rest.to_vec(), subs);
                 }
                 _ => {
                     let msg = format!("{left} and {right} do not unify.");
                     panic!("{msg}");
                 }
             }
-        }
-    }
-}
-
-impl fmt::Display for Term {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Term::Var(c) => write!(f, "{c}"),
-            Term::Num => write!(f, "Number"),
-            Term::Arrow(a_type) => {
-                write!(f, "{} -> {}", a_type.domain, a_type.range)
-            }
-            Term::Expr(e) => write!(f, "{e}"),
         }
     }
 }
@@ -268,5 +262,18 @@ impl fmt::Display for Constraint {
 impl fmt::Display for Substitution {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{} :: {}", self.var, self.is)
+    }
+}
+
+impl fmt::Display for Term {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Term::Var(c) => write!(f, "{c}"),
+            Term::Num => write!(f, "Number"),
+            Term::Arrow(a_type) => {
+                write!(f, "{} -> {}", a_type.domain, a_type.range)
+            }
+            Term::Expr(e) => write!(f, "{e}"),
+        }
     }
 }

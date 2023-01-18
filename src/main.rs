@@ -32,8 +32,12 @@ fn main() {
     //     println!("Sub: {r}");
     // }
 
-    let subs = infer::Types::infer(&c1);
-    for (k, v) in subs {
-        println!("Other Constraint: {k:?} with {v:?}");
+    // let subs = infer::Types::infer(&c1);
+    // for (k, v) in subs {
+    //     println!("Other Constraint: {k:?} with {v:?}");
+    // }
+    let subs = infer::infer_types(&c1);
+    for s in subs {
+        println!("Sub: {s}");
     }
 }
