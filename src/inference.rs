@@ -153,10 +153,12 @@ fn replace(left: &Term, term: &Term, right: &Term) -> Term {
                 range: Box::new(replace(left, range, right)),
             })
         }
-        _ => if left == term {
-            right.clone()
-        } else {
-            term.clone()
+        _ => {
+            if left == term {
+                right.clone()
+            } else {
+                term.clone()
+            }
         }
     }
 }
