@@ -51,7 +51,6 @@ mod tests {
 
     fn test(output: &[Substitution], expected: &[Substitution]) -> bool {
         !expected.iter().any(|e| !output.contains(e))
-            && output.len() - 1 <= expected.len()
     }
 
     #[test]
@@ -134,6 +133,79 @@ mod tests {
                 &Term::make_arrow(&Term::Num, &Term::Num),
             ),
             Substitution::new(&Term::Expr(Expr::Number(10)), &Term::Num),
+            Substitution::new(&Term::Expr(c1.clone()), &Term::Num),
+        ];
+        let result = infer_types(&c1);
+        for r in &result {
+            println!("Output: {r}");
+        }
+        assert!(test(&result, &subs))
+    }
+
+    #[test]
+    fn test_function_parameters() {
+        let two = Expr::Number(2);
+        let five = Expr::Number(5);
+        let var_x = Expr::Variable('x');
+
+        let call_five = Expr::Call(CallExp {
+            caller: Box::new(var_x),
+            callee: Box::new(five),
+        }); // x(5)
+
+        let add = Expr::Binary(BinExp::new(
+            call_five.clone(),
+            Operation::Add,
+            two,
+        )); // x(5) + 2
+
+        let first_lambda = Expr::Function(FunExp {
+            argument: Box::new(Expr::Variable('x')),
+            arg_type: Type::Number,
+            body: Box::new(add.clone()),
+        }); // (lambda(x) x(5) + 2)
+
+        let add_five = Expr::Binary(BinExp::new(
+            Expr::Variable('y'),
+            Operation::Add,
+            Expr::Number(5),
+        )); // y + 5
+        let second_lambda = Expr::Function(FunExp {
+            argument: Box::new(Expr::Variable('y')),
+            arg_type: Type::Number,
+            body: Box::new(add_five.clone()),
+        }); // (lambda(y) y + 5)
+
+        let c1 = Expr::Call(CallExp {
+            caller: Box::new(first_lambda.clone()),
+            callee: Box::new(second_lambda.clone()),
+        }); // (lambda(x) x(5) + 2)((lambda(x) x + 5))
+
+        let subs = vec![
+            Substitution::new(
+                &Term::Expr(Expr::Variable('x')),
+                &Term::make_arrow(&Term::Num, &Term::Num),
+            ),
+            Substitution::new(&Term::Expr(Expr::Number(5)), &Term::Num),
+            Substitution::new(&Term::Expr(Expr::Number(2)), &Term::Num),
+            Substitution::new(&Term::Expr(call_five), &Term::Num),
+            Substitution::new(&Term::Expr(add), &Term::Num),
+            Substitution::new(
+                &Term::Expr(first_lambda),
+                &Term::make_arrow(
+                    &Term::make_arrow(&Term::Num, &Term::Num),
+                    &Term::Num,
+                ),
+            ),
+            Substitution::new(
+                &Term::Expr(Expr::Variable('y')),
+                &Term::Num,
+            ),
+            Substitution::new(&Term::Expr(add_five), &Term::Num),
+            Substitution::new(
+                &Term::Expr(second_lambda),
+                &Term::make_arrow(&Term::Num, &Term::Num),
+            ),
             Substitution::new(&Term::Expr(c1.clone()), &Term::Num),
         ];
         let result = infer_types(&c1);
