@@ -145,6 +145,22 @@ fn occurs_check(left: &Term, right: &Term) -> bool {
     }
 }
 
+fn replace(left: &Term, term: &Term, right: &Term) -> Term {
+    match term {
+        Term::Arrow(ArrowType { domain, range }) => {
+            Term::Arrow(ArrowType {
+                domain: Box::new(replace(left, domain, right)),
+                range: Box::new(replace(left, range, right)),
+            })
+        }
+        _ => if left == term {
+            right.clone()
+        } else {
+            term.clone()
+        }
+    }
+}
+
 fn replace_all(
     left: &Term,
     right: &Term,
@@ -152,65 +168,17 @@ fn replace_all(
     subst: &mut [Substitution],
 ) {
     if !occurs_check(left, right) {
-        // println!("Constraints: {:#?}", consts);
         for c in consts.iter_mut() {
-            if let Term::Arrow(func) = &mut c.lhs {
-                if *func.domain == *left {
-                    *func.domain = right.clone();
-                }
-
-                if *func.range == *left {
-                    *func.range = right.clone();
-                }
-            }
-
-            if let Term::Arrow(func) = &mut c.rhs {
-                if *func.domain == *left {
-                    *func.domain = right.clone();
-                }
-
-                if *func.range == *left {
-                    *func.range = right.clone();
-                }
-            }
-
-            if c.lhs == *left {
-                // println!("Replacing {left} with {right}");
-                c.lhs = right.clone();
-            } else if c.rhs == *left {
-                // println!("Replacing {left} with {right}.");
-                c.rhs = right.clone();
-            }
+            c.lhs = replace(left, &c.lhs, right);
+            c.rhs = replace(left, &c.rhs, right);
         }
 
-        for sub in subst {
-            if let Term::Arrow(func) = &mut sub.var {
-                if *func.domain == *left {
-                    *func.domain = right.clone();
-                }
-
-                if *func.range == *left {
-                    *func.range = right.clone();
-                }
-            }
-
-            if let Term::Arrow(func) = &mut sub.is {
-                if *func.domain == *left {
-                    *func.domain = right.clone();
-                }
-
-                if *func.range == *left {
-                    *func.range = right.clone();
-                }
-            }
-            if sub.is == *left {
-                sub.is = right.clone();
-            } else if sub.var == *left {
-                sub.var = right.clone();
-            }
+        for s in subst.iter_mut() {
+            s.var = replace(left, &s.var, right);
+            s.is = replace(left, &s.is, right);
         }
     } else {
-        panic!("occurs_check failed.");
+        panic!("Occurs check failed.");
     }
 }
 

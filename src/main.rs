@@ -98,7 +98,11 @@ mod tests {
                 &Term::make_arrow(&Term::Num, &Term::Num),
             ),
         ];
-        assert!(test(&infer_types(&f), &subs))
+        let result = infer_types(&f);
+        for r in &result {
+            println!("Output: {r}");
+        }
+        assert!(test(&result, &subs))
     }
 
     #[test]
@@ -132,6 +136,10 @@ mod tests {
             Substitution::new(&Term::Expr(Expr::Number(10)), &Term::Num),
             Substitution::new(&Term::Expr(c1.clone()), &Term::Num),
         ];
-        assert!(test(&infer_types(&c1), &subs))
+        let result = infer_types(&c1);
+        for r in &result {
+            println!("Output: {r}");
+        }
+        assert!(test(&result, &subs))
     }
 }
