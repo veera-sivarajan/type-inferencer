@@ -1,6 +1,6 @@
 * Type Inferencer
 A toy implementation of Hindley-Milner type inference. The program walks through a given expression node, generates a set of constraints and unifies them to produce a set of substitutions.
-** Resources 
+** Resources
 Here are the resources I used to learn this algorithm:
 1. Chapter 30 in [[https://cs.brown.edu/~sk/Publications/Books/ProgLangs/2007-04-26/plai-2007-04-26.pdf][Programming Languages: Application and Interpretation (first edition)]]
 2. Chapter 15.3.2 in [[https://cs.brown.edu/courses/cs173/2012/book/types.html#%28part._.Type_.Inference%29][Programming Languages: Application and Interpretation (second edition)]]
