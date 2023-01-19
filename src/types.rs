@@ -53,7 +53,11 @@ pub enum Expr {
 }
 
 impl Expr {
-    pub fn make_binary(left: &Expr, operator: Operation, right: &Expr) -> Self {
+    pub fn make_binary(
+        left: &Expr,
+        operator: Operation,
+        right: &Expr,
+    ) -> Self {
         Expr::Binary(BinExp {
             left: Box::new(left.clone()),
             operator,
@@ -61,7 +65,7 @@ impl Expr {
         })
     }
 }
-            
+
 impl fmt::Display for Expr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -146,7 +150,7 @@ pub struct CallExp {
 
 impl fmt::Display for CallExp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}({})", self.caller, self.callee)
+        write!(f, "Call<{}({})>", self.caller, self.callee)
     }
 }
 

@@ -65,7 +65,7 @@ pub fn infer_types(expr: &Expr) -> Vec<Substitution> {
 }
 
 fn generate_constraints(expr: &Expr) -> Vec<Constraint> {
-     match expr {
+    match expr {
         Expr::Number(_) => {
             // When the expression is a number, we expect the type
             // of the expression to be numeric:
@@ -135,7 +135,6 @@ fn generate_constraints(expr: &Expr) -> Vec<Constraint> {
         _ => todo!(),
     }
 }
-
 
 fn occurs_check(left: &Term, right: &Term) -> bool {
     match left {
@@ -219,7 +218,7 @@ fn unify(
     consts: &mut Vec<Constraint>,
     subs: &mut Vec<Substitution>,
 ) -> Vec<Substitution> {
-        if consts.is_empty() {
+    if consts.is_empty() {
         subs.to_vec()
     } else {
         let (first, rest) = consts.split_at_mut(1);
@@ -242,19 +241,27 @@ fn unify(
             return unify(&mut new_rest, subs);
         } else {
             match (left, right) {
-                (Term::Arrow(a_one), Term::Arrow(a_two)) => {
-                    let (d_one, d_two) =
-                        (a_one.domain.clone(), a_two.domain.clone());
-                    let (r_one, r_two) =
-                        (a_one.range.clone(), a_two.range.clone());
+                (
+                    Term::Arrow(ArrowType {
+                        domain: d_one,
+                        range: r_one,
+                    }),
+                    Term::Arrow(ArrowType {
+                        domain: d_two,
+                        range: r_two,
+                    }),
+                ) => {
                     let mut new_rest = rest.to_vec();
                     new_rest.extend(vec![
-                        Constraint::new(*d_one, *d_two),
-                        Constraint::new(*r_one, *r_two),
+                        Constraint::new(*d_one.clone(), *d_two.clone()),
+                        Constraint::new(*r_one.clone(), *r_two.clone()),
                     ]);
                     return unify(&mut new_rest.to_vec(), subs);
                 }
                 _ => {
+                    for sub in subs {
+                        println!("Found: {sub}");
+                    }
                     let msg = format!("{left} and {right} do not unify.");
                     panic!("{msg}");
                 }
@@ -281,7 +288,7 @@ impl fmt::Display for Term {
             Term::Var(c) => write!(f, "Var({c})"),
             Term::Num => write!(f, "Number"),
             Term::Arrow(a_type) => {
-                write!(f, "{} -> {}", a_type.domain, a_type.range)
+                write!(f, "|{} -> {}|", a_type.domain, a_type.range)
             }
             Term::Expr(e) => write!(f, "{e}"),
         }
