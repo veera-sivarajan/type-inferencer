@@ -56,7 +56,8 @@ impl Constraint {
 }
 
 pub fn infer_types(expr: &Expr) -> Vec<Substitution> {
-    let mut cons = generate_constraints(expr);
+    let mut cons = vec![];
+    generate_constraints(expr, &mut cons);
     for c in &cons {
         println!("Constraint: {c}");
     }
@@ -64,44 +65,42 @@ pub fn infer_types(expr: &Expr) -> Vec<Substitution> {
     unify(&mut cons, &mut subs)
 }
 
-fn generate_constraints(expr: &Expr) -> Vec<Constraint> {
+fn generate_constraints(expr: &Expr, constraints: &mut Vec<Constraint>) {
     match expr {
         Expr::Number(_) => {
             // When the expression is a number, we expect the type
             // of the expression to be numeric:
-            vec![Constraint {
+            constraints.push(Constraint {
                 lhs: Term::Expr(expr.clone()),
                 rhs: Term::Num,
-            }]
+            });
         }
         Expr::Variable(s) => {
-            vec![Constraint {
+            constraints.push(Constraint {
                 lhs: Term::Expr(expr.clone()),
                 rhs: Term::Var(*s),
-            }]
+            });
         }
         Expr::Binary(BinExp {
             left,
             operator: _,
             right,
         }) => {
-            let mut left_constraint = generate_constraints(left);
-            let right_constraint = generate_constraints(right);
+            generate_constraints(left, constraints);
+            generate_constraints(right, constraints);
             let consequent = vec![
                 Constraint::new(Term::Expr(*left.clone()), Term::Num),
                 Constraint::new(Term::Expr(*right.clone()), Term::Num),
                 Constraint::new(Term::Expr(expr.clone()), Term::Num),
             ];
-            left_constraint.extend(right_constraint);
-            left_constraint.extend(consequent);
-            left_constraint
+            constraints.extend(consequent);
         }
         Expr::Function(FunExp {
             argument,
             arg_type: _,
             body,
         }) => {
-            let mut body_constraint = generate_constraints(body);
+            generate_constraints(body, constraints);
             let Expr::Variable(a) = **argument else {
                 panic!("Function argument is not a variable.");
             };
@@ -112,15 +111,14 @@ fn generate_constraints(expr: &Expr) -> Vec<Constraint> {
                     range: Box::new(Term::Expr(*body.clone())),
                 }),
             }];
-            body_constraint.extend(consequent);
-            body_constraint
+            constraints.extend(consequent);
         }
         Expr::Call(CallExp {
             caller: function,
             callee: args,
         }) => {
-            let mut f_constraint = generate_constraints(function);
-            let a_constraint = generate_constraints(args);
+            generate_constraints(function, constraints);
+            generate_constraints(args, constraints);
             let consequent = vec![Constraint::new(
                 Term::Expr(*function.clone()),
                 Term::Arrow(ArrowType {
@@ -128,9 +126,7 @@ fn generate_constraints(expr: &Expr) -> Vec<Constraint> {
                     range: Box::new(Term::Expr(expr.clone())),
                 }),
             )];
-            f_constraint.extend(a_constraint);
-            f_constraint.extend(consequent);
-            f_constraint
+            constraints.extend(consequent);
         }
         _ => todo!(),
     }
