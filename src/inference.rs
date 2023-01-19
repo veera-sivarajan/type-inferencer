@@ -196,15 +196,13 @@ fn unify(
         if left == right {
             unify(&mut rest.to_vec(), subs)
         } else if left.is_ident() {
-            let mut new_rest = rest.to_vec();
-            replace_all(left, right, &mut new_rest, subs);
+            replace_all(left, right, rest, subs);
             subs.push(Substitution::new(left, right));
-            return unify(&mut new_rest, subs);
+            return unify(&mut rest.to_vec(), subs);
         } else if right.is_ident() {
-            let mut new_rest = rest.to_vec();
-            replace_all(right, left, &mut new_rest, subs);
+            replace_all(right, left, rest, subs);
             subs.push(Substitution::new(right, left));
-            return unify(&mut new_rest, subs);
+            return unify(&mut rest.to_vec(), subs);
         } else {
             match (left, right) {
                 (
@@ -222,7 +220,7 @@ fn unify(
                         Constraint::new(*d_one.clone(), *d_two.clone()),
                         Constraint::new(*r_one.clone(), *r_two.clone()),
                     ]);
-                    return unify(&mut new_rest.to_vec(), subs);
+                    return unify(&mut new_rest, subs);
                 }
                 _ => {
                     for sub in subs {
