@@ -52,6 +52,16 @@ pub enum Expr {
     Call(CallExp),
 }
 
+impl Expr {
+    pub fn make_binary(left: &Expr, operator: Operation, right: &Expr) -> Self {
+        Expr::Binary(BinExp {
+            left: Box::new(left.clone()),
+            operator,
+            right: Box::new(right.clone()),
+        })
+    }
+}
+            
 impl fmt::Display for Expr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

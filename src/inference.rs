@@ -13,6 +13,13 @@ impl Term {
     fn is_ident(&self) -> bool {
         matches!(self, Term::Expr(_) | Term::Var(_))
     }
+
+    pub fn make_arrow(domain: &Term, range: &Term) -> Self {
+        Term::Arrow(ArrowType {
+            domain: Box::new(domain.clone()),
+            range: Box::new(range.clone()),
+        })
+    }
 }
 
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
@@ -28,7 +35,7 @@ pub struct Substitution {
 }
 
 impl Substitution {
-    fn new(var: &Term, is: &Term) -> Self {
+    pub fn new(var: &Term, is: &Term) -> Self {
         Self {
             var: var.clone(),
             is: is.clone(),
