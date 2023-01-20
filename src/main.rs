@@ -14,7 +14,7 @@ fn main() {
         callee: Box::new(five),
     }); // x(5)
 
-    let add = call_five + two;
+    let add = call_five + two; // x(5) + 2
 
     let first_lambda = Expr::Function(FunExp {
         argument: Box::new(Expr::Variable('x')),
@@ -22,17 +22,20 @@ fn main() {
         body: Box::new(add),
     }); // (lambda(x) x(5) + 2)
 
-    let add_five = Expr::Variable('y') + Expr::Number(5);
-    let second_lambda = Expr::Function(FunExp {
-        argument: Box::new(Expr::Variable('y')),
-        arg_type: Type::Number,
-        body: Box::new(add_five),
-    }); // (lambda(x) x + 5)
+    // let add_five = Expr::Variable('y') + Expr::Number(5);
+    // let second_lambda = Expr::Function(FunExp {
+    //     argument: Box::new(Expr::Variable('y')),
+    //     arg_type: Type::Number,
+    //     body: Box::new(add_five),
+    // }); // (lambda(x) x + 5)
 
+    let second_lambda = Expr::Number(2);
     let c1 = Expr::Call(CallExp {
         caller: Box::new(first_lambda),
         callee: Box::new(second_lambda),
     }); // (lambda(x) x(5) + 2)((lambda(x) x + 5))
+
+    // let add = Expr::Variable('y') + Expr::Variable('y') + Expr::Number(2);
 
     println!("Input: {c1}");
     let subs = infer_types(&c1);
@@ -197,4 +200,34 @@ mod tests {
         }
         assert!(test(&result, &subs))
     }
+
+    #[test]
+    #[should_panic]
+    fn test_incorrect_argument() {
+        let two = Expr::Number(2);
+        let five = Expr::Number(5);
+        let var_x = Expr::Variable('x');
+
+        let call_five = Expr::Call(CallExp {
+            caller: Box::new(var_x),
+            callee: Box::new(five),
+        }); // x(5)
+
+        let add = call_five + two; // x(5) + 2
+
+        let first_lambda = Expr::Function(FunExp {
+            argument: Box::new(Expr::Variable('x')),
+            arg_type: Type::Number,
+            body: Box::new(add),
+        }); // (lambda(x) x(5) + 2)
+
+        let number = Expr::Number(2);
+        let c1 = Expr::Call(CallExp {
+            caller: Box::new(first_lambda),
+            callee: Box::new(number),
+        }); // (lambda(x) x(5) + 2)(2)
+
+        let _ = infer_types(&c1);
+    }
 }
+    
