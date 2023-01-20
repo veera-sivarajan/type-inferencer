@@ -57,21 +57,7 @@ impl Add for Expr {
     type Output = Expr;
 
     fn add(self, other: Self) -> Self::Output {
-        Expr::Binary(BinExp::new(self, Operation::Add, other)) 
-    }
-}
-
-impl Expr {
-    pub fn make_binary(
-        left: &Expr,
-        operator: Operation,
-        right: &Expr,
-    ) -> Self {
-        Expr::Binary(BinExp {
-            left: Box::new(left.clone()),
-            operator,
-            right: Box::new(right.clone()),
-        })
+        Expr::Binary(BinExp::new(self, Operation::Add, other))
     }
 }
 
