@@ -14,7 +14,7 @@ fn main() {
         callee: Box::new(five),
     }); // x(5)
 
-    let add = Expr::Binary(BinExp::new(call_five, Operation::Add, two)); // x(5) + 2
+    let add = call_five + two;
 
     let first_lambda = Expr::Function(FunExp {
         argument: Box::new(Expr::Variable('x')),
@@ -22,11 +22,7 @@ fn main() {
         body: Box::new(add),
     }); // (lambda(x) x(5) + 2)
 
-    let add_five = Expr::Binary(BinExp::new(
-        Expr::Variable('y'),
-        Operation::Add,
-        Expr::Number(5),
-    )); // x + 5
+    let add_five = Expr::Variable('y') + Expr::Number(5);
     let second_lambda = Expr::Function(FunExp {
         argument: Box::new(Expr::Variable('y')),
         arg_type: Type::Number,
@@ -62,11 +58,7 @@ mod tests {
 
     #[test]
     fn test_binary() {
-        let exp = Expr::make_binary(
-            &Expr::Number(1),
-            Operation::Add,
-            &Expr::Number(2),
-        );
+        let exp = Expr::Number(1) + Expr::Number(2);
         let subs = vec![
             Substitution::new(&Term::Expr(Expr::Number(1)), &Term::Num),
             Substitution::new(&Term::Expr(Expr::Number(2)), &Term::Num),
@@ -79,7 +71,7 @@ mod tests {
     fn test_function() {
         let l = Expr::Variable('x');
         let r = Expr::Number(2);
-        let add = Expr::make_binary(&l, Operation::Add, &r);
+        let add = l.clone() + r;
         let f = Expr::Function(FunExp {
             argument: Box::new(l), // a = x
             arg_type: Type::Number,
@@ -109,7 +101,7 @@ mod tests {
         let a = Expr::Variable('x');
         let r = Expr::Number(2);
         let l = Expr::Variable('x');
-        let n = Expr::Binary(BinExp::new(l, Operation::Add, r)); // x + 2
+        let n = l + r;
         let f = Expr::Function(FunExp {
             argument: Box::new(a), // a = x
             arg_type: Type::Number,
@@ -153,23 +145,14 @@ mod tests {
             callee: Box::new(five),
         }); // x(5)
 
-        let add = Expr::Binary(BinExp::new(
-            call_five.clone(),
-            Operation::Add,
-            two,
-        )); // x(5) + 2
-
+        let add = call_five.clone() + two;
         let first_lambda = Expr::Function(FunExp {
             argument: Box::new(Expr::Variable('x')),
             arg_type: Type::Number,
             body: Box::new(add.clone()),
         }); // (lambda(x) x(5) + 2)
 
-        let add_five = Expr::Binary(BinExp::new(
-            Expr::Variable('y'),
-            Operation::Add,
-            Expr::Number(5),
-        )); // y + 5
+        let add_five = Expr::Variable('y') + Expr::Number(5);
         let second_lambda = Expr::Function(FunExp {
             argument: Box::new(Expr::Variable('y')),
             arg_type: Type::Number,

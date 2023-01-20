@@ -1,4 +1,5 @@
 use std::fmt;
+use std::ops::Add;
 
 #[derive(Eq, Debug, Hash, PartialEq, Clone)]
 pub enum Operation {
@@ -50,6 +51,14 @@ pub enum Expr {
     // Conditional(IfExp),
     Function(FunExp),
     Call(CallExp),
+}
+
+impl Add for Expr {
+    type Output = Expr;
+
+    fn add(self, other: Self) -> Self::Output {
+        Expr::Binary(BinExp::new(self, Operation::Add, other)) 
+    }
 }
 
 impl Expr {
