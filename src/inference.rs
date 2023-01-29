@@ -6,6 +6,7 @@ pub enum Term {
     Expr(Expr),       // variable
     Var(char),        // variable
     Num,              // constant
+    Bool,
     Arrow(ArrowType), // function application
 }
 
@@ -81,6 +82,12 @@ fn generate_constraints(expr: &Expr, constraints: &mut Vec<Constraint>) {
                 rhs: Term::Var(*s),
             });
         }
+        Expr::Bool(_) => {
+            constraints.push(Constraint {
+                lhs: Term::Expr(expr.clone()),
+                rhs: Term::Bool,
+            });
+        }
         Expr::Binary(BinExp {
             left,
             operator: _,
@@ -94,6 +101,19 @@ fn generate_constraints(expr: &Expr, constraints: &mut Vec<Constraint>) {
                 Constraint::new(Term::Expr(expr.clone()), Term::Num),
             ];
             constraints.extend(consequent);
+        }
+        Expr::Conditional(IfExp {
+            condition,
+            then,
+            elze,
+        }) => {
+            generate_constraints(condition, constraints);
+            generate_constraints(then, constraints);
+            generate_constraints(elze, constraints);
+            let rest = vec![
+                Constraint::new(Term::Expr(expr.clone()), Term::Expr(*then.clone())),
+                Constraint::new(Term::Expr(expr.clone()), Term::Expr(*elze.clone()))];
+            constraints.extend(rest);
         }
         Expr::Function(FunExp {
             argument,
@@ -251,6 +271,7 @@ impl fmt::Display for Term {
         match self {
             Term::Var(c) => write!(f, "Var({c})"),
             Term::Num => write!(f, "Number"),
+            Term::Bool => write!(f, "Bool"),
             Term::Arrow(a_type) => {
                 write!(f, "|{} -> {}|", a_type.domain, a_type.range)
             }

@@ -5,7 +5,10 @@ use crate::inference::*;
 use crate::types::*;
 
 fn main() {
-    let c1 = Expr::Number(1) + Expr::Number(2);
+    // let c1 = Expr::Number(1) + Expr::Number(2);
+    let c1 = Expr::Conditional(IfExp::new(Expr::Bool(true),
+                                          Expr::Number(1),
+                                          Expr::Number(2)));
     println!("Input: {c1}");
     let subs = infer_types(&c1);
     for s in subs {

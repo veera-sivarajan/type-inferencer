@@ -48,7 +48,7 @@ pub enum Expr {
     Bool(bool),
     Variable(char),
     Binary(BinExp),
-    // Conditional(IfExp),
+    Conditional(IfExp),
     Function(FunExp),
     Call(CallExp),
 }
@@ -69,6 +69,8 @@ impl fmt::Display for Expr {
             Expr::Function(e) => write!(f, "{e}"),
             Expr::Call(e) => write!(f, "{e}"),
             Expr::Variable(c) => write!(f, "Variable({c})"),
+            Expr::Conditional(e) => write!(f, "{e}"),
+            Expr::Bool(b) => write!(f, "{b}"),
             _ => todo!(),
         }
     }
@@ -111,6 +113,12 @@ impl IfExp {
             then: Box::new(then),
             elze: Box::new(elze),
         }
+    }
+}
+
+impl fmt::Display for IfExp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "if {} then {} else {}", self.condition, self.then, self.elze)
     }
 }
 
