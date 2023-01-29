@@ -62,8 +62,7 @@ pub fn infer_types(expr: &Expr) -> Vec<Substitution> {
     for c in &cons {
         println!("Constraint: {c}");
     }
-    let mut subs = vec![];
-    unify(&mut cons, &mut subs)
+    unify(&mut cons, &mut vec![])
 }
 
 fn generate_constraints(expr: &Expr, constraints: &mut Vec<Constraint>) {

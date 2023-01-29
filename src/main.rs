@@ -6,10 +6,9 @@ use crate::types::*;
 
 
 fn main() {
-    // let c1 = Expr::Number(1) + Expr::Number(2);
-    let c1 = Expr::Conditional(IfExp::new(true.into(), 1.into(), 2.into()));
-    println!("Input: {c1}");
-    let subs = infer_types(&c1);
+    let exp = Expr::Number(1) + Expr::Number(2);
+    println!("Input: {exp}");
+    let subs = infer_types(&exp);
     for s in subs {
         println!("Sub: {s}");
     }
