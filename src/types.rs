@@ -53,6 +53,18 @@ pub enum Expr {
     Call(CallExp),
 }
 
+impl From<i64> for Expr {
+    fn from(num: i64) -> Self {
+        Expr::Number(num)
+    }
+}
+
+impl From<bool> for Expr {
+    fn from(value: bool) -> Self {
+        Expr::Bool(value)
+    }
+}
+
 impl Add for Expr {
     type Output = Expr;
 

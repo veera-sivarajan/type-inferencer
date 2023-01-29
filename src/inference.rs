@@ -111,6 +111,7 @@ fn generate_constraints(expr: &Expr, constraints: &mut Vec<Constraint>) {
             generate_constraints(then, constraints);
             generate_constraints(elze, constraints);
             let rest = vec![
+                Constraint::new(Term::Expr(*condition.clone()), Term::Bool),
                 Constraint::new(Term::Expr(expr.clone()), Term::Expr(*then.clone())),
                 Constraint::new(Term::Expr(expr.clone()), Term::Expr(*elze.clone()))];
             constraints.extend(rest);
