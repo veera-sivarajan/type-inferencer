@@ -80,7 +80,7 @@ impl fmt::Display for Expr {
             Expr::Binary(e) => write!(f, "{e}"),
             Expr::Function(e) => write!(f, "{e}"),
             Expr::Call(e) => write!(f, "{e}"),
-            Expr::Variable(c) => write!(f, "Variable({c})"),
+            Expr::Variable(c) => write!(f, "{c}"),
             Expr::Conditional(e) => write!(f, "{e}"),
             Expr::Bool(b) => write!(f, "{b}"),
             _ => todo!(),
@@ -130,7 +130,11 @@ impl IfExp {
 
 impl fmt::Display for IfExp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "if {} then {} else {}", self.condition, self.then, self.elze)
+        write!(
+            f,
+            "if {} then {} else {}",
+            self.condition, self.then, self.elze
+        )
     }
 }
 

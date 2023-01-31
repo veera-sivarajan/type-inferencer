@@ -3,9 +3,9 @@ use std::fmt;
 
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub enum Term {
-    Expr(Expr),       // variable
-    Var(char),        // variable
-    Num,              // constant
+    Expr(Expr), // variable
+    Var(char),  // variable
+    Num,        // constant
     Bool,
     Arrow(ArrowType), // function application
 }
@@ -110,9 +110,19 @@ fn generate_constraints(expr: &Expr, constraints: &mut Vec<Constraint>) {
             generate_constraints(then, constraints);
             generate_constraints(elze, constraints);
             let rest = vec![
-                Constraint::new(Term::Expr(*condition.clone()), Term::Bool),
-                Constraint::new(Term::Expr(expr.clone()), Term::Expr(*then.clone())),
-                Constraint::new(Term::Expr(expr.clone()), Term::Expr(*elze.clone()))];
+                Constraint::new(
+                    Term::Expr(*condition.clone()),
+                    Term::Bool,
+                ),
+                Constraint::new(
+                    Term::Expr(expr.clone()),
+                    Term::Expr(*then.clone()),
+                ),
+                Constraint::new(
+                    Term::Expr(expr.clone()),
+                    Term::Expr(*elze.clone()),
+                ),
+            ];
             constraints.extend(rest);
         }
         Expr::Function(FunExp {
@@ -218,11 +228,11 @@ fn unify(
         } else if left.is_ident() {
             replace_all(left, right, rest, subs);
             subs.push(Substitution::new(left, right));
-            return unify(&mut rest.to_vec(), subs);
+            unify(&mut rest.to_vec(), subs)
         } else if right.is_ident() {
             replace_all(right, left, rest, subs);
             subs.push(Substitution::new(right, left));
-            return unify(&mut rest.to_vec(), subs);
+            unify(&mut rest.to_vec(), subs)
         } else {
             match (left, right) {
                 (
@@ -240,7 +250,7 @@ fn unify(
                         Constraint::new(*d_one.clone(), *d_two.clone()),
                         Constraint::new(*r_one.clone(), *r_two.clone()),
                     ]);
-                    return unify(&mut new_rest, subs);
+                    unify(&mut new_rest, subs)
                 }
                 _ => {
                     for sub in subs {
@@ -269,11 +279,11 @@ impl fmt::Display for Substitution {
 impl fmt::Display for Term {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Term::Var(c) => write!(f, "Var({c})"),
+            Term::Var(c) => write!(f, "{c}"),
             Term::Num => write!(f, "Number"),
             Term::Bool => write!(f, "Bool"),
             Term::Arrow(a_type) => {
-                write!(f, "|{} -> {}|", a_type.domain, a_type.range)
+                write!(f, "{} -> {}", a_type.domain, a_type.range)
             }
             Term::Expr(e) => write!(f, "{e}"),
         }

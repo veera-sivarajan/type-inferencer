@@ -4,14 +4,16 @@ mod types;
 use crate::inference::*;
 use crate::types::*;
 
-
 fn main() {
-    let exp = Expr::Number(1) + Expr::Number(2);
+    let add1 = Expr::Number(1) + Expr::Number(3); 
+    let add2 = Expr::Number(2) + Expr::Number(4); 
+    let exp = Expr::Conditional(IfExp::new(true.into(), add1, add2));
     println!("Input: {exp}");
     let subs = infer_types(&exp);
     for s in subs {
         println!("Sub: {s}");
     }
+
 }
 
 #[cfg(test)]
@@ -202,12 +204,13 @@ mod tests {
 
     #[test]
     fn test_conditional() {
-        let exp = Expr::Conditional(IfExp::new(true.into(), 1.into(), 2.into()));
+        let exp =
+            Expr::Conditional(IfExp::new(true.into(), 1.into(), 2.into()));
         let subs = vec![
             Substitution::new(&Term::Expr(Expr::Bool(true)), &Term::Bool),
             Substitution::new(&Term::Expr(Expr::Number(1)), &Term::Num),
             Substitution::new(&Term::Expr(Expr::Number(2)), &Term::Num),
-            Substitution::new(&Term::Expr(exp.clone()), &Term::Num)
+            Substitution::new(&Term::Expr(exp.clone()), &Term::Num),
         ];
         let result = infer_types(&exp);
         assert!(test(&result, &subs))
@@ -216,15 +219,19 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_incorrect_condition() {
-        let exp = Expr::Conditional(IfExp::new(1.into(), 1.into(), 2.into()));
+        let exp =
+            Expr::Conditional(IfExp::new(1.into(), 1.into(), 2.into()));
         infer_types(&exp);
     }
 
-    
     #[test]
     #[should_panic]
     fn test_mismatched_branch_types() {
-        let exp = Expr::Conditional(IfExp::new(true.into(), false.into(), 2.into()));
+        let exp = Expr::Conditional(IfExp::new(
+            true.into(),
+            false.into(),
+            2.into(),
+        ));
         infer_types(&exp);
     }
 }
