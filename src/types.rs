@@ -132,7 +132,7 @@ impl fmt::Display for IfExp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "if {} then {} else {}",
+            "if {} {{{}}} else {{{}}}",
             self.condition, self.then, self.elze
         )
     }
