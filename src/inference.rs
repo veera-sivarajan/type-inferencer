@@ -15,10 +15,10 @@ impl Term {
         matches!(self, Term::Expr(_) | Term::Var(_))
     }
 
-    pub fn make_arrow(domain: &Term, range: &Term) -> Self {
+    pub fn make_arrow(domain: Term, range: Term) -> Self {
         Term::Arrow(ArrowType {
-            domain: Box::new(domain.clone()),
-            range: Box::new(range.clone()),
+            domain: Box::new(domain),
+            range: Box::new(range),
         })
     }
 }
@@ -36,10 +36,10 @@ pub struct Substitution {
 }
 
 impl Substitution {
-    pub fn new(var: &Term, is: &Term) -> Self {
+    pub fn new(var: Term, is: Term) -> Self {
         Self {
-            var: var.clone(),
-            is: is.clone(),
+            var,
+            is,
         }
     }
 }
@@ -220,21 +220,21 @@ fn unify(
         let (first, rest) = consts.split_at_mut(1);
         let first = first.first().unwrap();
 
-        let left = &first.lhs;
-        let right = &first.rhs;
+        let left = first.lhs.clone();
+        let right = first.rhs.clone();
 
         if left == right {
             unify(&mut rest.to_vec(), subs)
         } else if left.is_ident() {
-            replace_all(left, right, rest, subs);
+            replace_all(&left, &right, rest, subs);
             subs.push(Substitution::new(left, right));
             unify(&mut rest.to_vec(), subs)
         } else if right.is_ident() {
-            replace_all(right, left, rest, subs);
+            replace_all(&right, &left, rest, subs);
             subs.push(Substitution::new(right, left));
             unify(&mut rest.to_vec(), subs)
         } else {
-            match (left, right) {
+            match (&left, &right) {
                 (
                     Term::Arrow(ArrowType {
                         domain: d_one,

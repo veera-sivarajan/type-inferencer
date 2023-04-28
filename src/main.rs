@@ -27,7 +27,7 @@ mod tests {
     #[test]
     fn test_number() {
         let exp = Expr::Number(1);
-        let subs = Substitution::new(&Term::Expr(exp.clone()), &Term::Num);
+        let subs = Substitution::new(Term::Expr(exp.clone()), Term::Num);
         assert!(test(&infer_types(&exp), &[subs]))
     }
 
@@ -35,9 +35,9 @@ mod tests {
     fn test_binary() {
         let exp = Expr::Number(1) + Expr::Number(2);
         let subs = vec![
-            Substitution::new(&Term::Expr(Expr::Number(1)), &Term::Num),
-            Substitution::new(&Term::Expr(Expr::Number(2)), &Term::Num),
-            Substitution::new(&Term::Expr(exp.clone()), &Term::Num),
+            Substitution::new(Term::Expr(Expr::Number(1)), Term::Num),
+            Substitution::new(Term::Expr(Expr::Number(2)), Term::Num),
+            Substitution::new(Term::Expr(exp.clone()), Term::Num),
         ];
         assert!(test(&infer_types(&exp), &subs))
     }
@@ -54,14 +54,14 @@ mod tests {
         });
         let subs = vec![
             Substitution::new(
-                &Term::Expr(Expr::Variable('x')),
-                &Term::Num,
+                Term::Expr(Expr::Variable('x')),
+                Term::Num,
             ),
-            Substitution::new(&Term::Expr(Expr::Number(2)), &Term::Num),
-            Substitution::new(&Term::Expr(add), &Term::Num),
+            Substitution::new(Term::Expr(Expr::Number(2)), Term::Num),
+            Substitution::new(Term::Expr(add), Term::Num),
             Substitution::new(
-                &Term::Expr(f.clone()),
-                &Term::make_arrow(&Term::Num, &Term::Num),
+                Term::Expr(f.clone()),
+                Term::make_arrow(Term::Num, Term::Num),
             ),
         ];
         let result = infer_types(&f);
@@ -90,17 +90,17 @@ mod tests {
 
         let subs = vec![
             Substitution::new(
-                &Term::Expr(Expr::Variable('x')),
-                &Term::Num,
+                Term::Expr(Expr::Variable('x')),
+                Term::Num,
             ),
-            Substitution::new(&Term::Expr(Expr::Number(2)), &Term::Num),
-            Substitution::new(&Term::Expr(n), &Term::Num),
+            Substitution::new(Term::Expr(Expr::Number(2)), Term::Num),
+            Substitution::new(Term::Expr(n), Term::Num),
             Substitution::new(
-                &Term::Expr(f),
-                &Term::make_arrow(&Term::Num, &Term::Num),
+                Term::Expr(f),
+                Term::make_arrow(Term::Num, Term::Num),
             ),
-            Substitution::new(&Term::Expr(Expr::Number(10)), &Term::Num),
-            Substitution::new(&Term::Expr(c1.clone()), &Term::Num),
+            Substitution::new(Term::Expr(Expr::Number(10)), Term::Num),
+            Substitution::new(Term::Expr(c1.clone()), Term::Num),
         ];
         let result = infer_types(&c1);
         for r in &result {
@@ -141,30 +141,30 @@ mod tests {
 
         let subs = vec![
             Substitution::new(
-                &Term::Expr(Expr::Variable('x')),
-                &Term::make_arrow(&Term::Num, &Term::Num),
+                Term::Expr(Expr::Variable('x')),
+                Term::make_arrow(Term::Num, Term::Num),
             ),
-            Substitution::new(&Term::Expr(Expr::Number(5)), &Term::Num),
-            Substitution::new(&Term::Expr(Expr::Number(2)), &Term::Num),
-            Substitution::new(&Term::Expr(call_five), &Term::Num),
-            Substitution::new(&Term::Expr(add), &Term::Num),
+            Substitution::new(Term::Expr(Expr::Number(5)), Term::Num),
+            Substitution::new(Term::Expr(Expr::Number(2)), Term::Num),
+            Substitution::new(Term::Expr(call_five), Term::Num),
+            Substitution::new(Term::Expr(add), Term::Num),
             Substitution::new(
-                &Term::Expr(first_lambda),
-                &Term::make_arrow(
-                    &Term::make_arrow(&Term::Num, &Term::Num),
-                    &Term::Num,
+                Term::Expr(first_lambda),
+                Term::make_arrow(
+                    Term::make_arrow(Term::Num, Term::Num),
+                    Term::Num,
                 ),
             ),
             Substitution::new(
-                &Term::Expr(Expr::Variable('y')),
-                &Term::Num,
+                Term::Expr(Expr::Variable('y')),
+                Term::Num,
             ),
-            Substitution::new(&Term::Expr(add_five), &Term::Num),
+            Substitution::new(Term::Expr(add_five), Term::Num),
             Substitution::new(
-                &Term::Expr(second_lambda),
-                &Term::make_arrow(&Term::Num, &Term::Num),
+                Term::Expr(second_lambda),
+                Term::make_arrow(Term::Num, Term::Num),
             ),
-            Substitution::new(&Term::Expr(c1.clone()), &Term::Num),
+            Substitution::new(Term::Expr(c1.clone()), Term::Num),
         ];
         let result = infer_types(&c1);
         for r in &result {
@@ -207,10 +207,10 @@ mod tests {
         let exp =
             Expr::Conditional(IfExp::new(true.into(), 1.into(), 2.into()));
         let subs = vec![
-            Substitution::new(&Term::Expr(Expr::Bool(true)), &Term::Bool),
-            Substitution::new(&Term::Expr(Expr::Number(1)), &Term::Num),
-            Substitution::new(&Term::Expr(Expr::Number(2)), &Term::Num),
-            Substitution::new(&Term::Expr(exp.clone()), &Term::Num),
+            Substitution::new(Term::Expr(Expr::Bool(true)), Term::Bool),
+            Substitution::new(Term::Expr(Expr::Number(1)), Term::Num),
+            Substitution::new(Term::Expr(Expr::Number(2)), Term::Num),
+            Substitution::new(Term::Expr(exp.clone()), Term::Num),
         ];
         let result = infer_types(&exp);
         assert!(test(&result, &subs))
