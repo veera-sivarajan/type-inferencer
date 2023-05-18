@@ -33,7 +33,7 @@ mod tests {
     #[test]
     fn test_binary() {
         let exp = Expr::Number(1) + Expr::Number(2);
-        let subs = vec![
+        let subs = [
             Substitution::new(Term::Expr(Expr::Number(1)), Term::Num),
             Substitution::new(Term::Expr(Expr::Number(2)), Term::Num),
             Substitution::new(Term::Expr(exp.clone()), Term::Num),
@@ -51,11 +51,8 @@ mod tests {
             arg_type: Type::Number,
             body: Box::new(add.clone()), // x + 2
         });
-        let subs = vec![
-            Substitution::new(
-                Term::Expr(Expr::Variable('x')),
-                Term::Num,
-            ),
+        let subs = [
+            Substitution::new(Term::Expr(Expr::Variable('x')), Term::Num),
             Substitution::new(Term::Expr(Expr::Number(2)), Term::Num),
             Substitution::new(Term::Expr(add), Term::Num),
             Substitution::new(
@@ -87,11 +84,8 @@ mod tests {
             callee: Box::new(arg1),
         }); // ((lambda(x) x + 2) (5))
 
-        let subs = vec![
-            Substitution::new(
-                Term::Expr(Expr::Variable('x')),
-                Term::Num,
-            ),
+        let subs = [
+            Substitution::new(Term::Expr(Expr::Variable('x')), Term::Num),
             Substitution::new(Term::Expr(Expr::Number(2)), Term::Num),
             Substitution::new(Term::Expr(n), Term::Num),
             Substitution::new(
@@ -138,7 +132,7 @@ mod tests {
             callee: Box::new(second_lambda.clone()),
         }); // (lambda(x) x(5) + 2)((lambda(x) x + 5))
 
-        let subs = vec![
+        let subs = [
             Substitution::new(
                 Term::Expr(Expr::Variable('x')),
                 Term::make_arrow(Term::Num, Term::Num),
@@ -154,10 +148,7 @@ mod tests {
                     Term::Num,
                 ),
             ),
-            Substitution::new(
-                Term::Expr(Expr::Variable('y')),
-                Term::Num,
-            ),
+            Substitution::new(Term::Expr(Expr::Variable('y')), Term::Num),
             Substitution::new(Term::Expr(add_five), Term::Num),
             Substitution::new(
                 Term::Expr(second_lambda),
@@ -205,7 +196,7 @@ mod tests {
     fn test_conditional() {
         let exp =
             Expr::Conditional(IfExp::new(true.into(), 1.into(), 2.into()));
-        let subs = vec![
+        let subs = [
             Substitution::new(Term::Expr(Expr::Bool(true)), Term::Bool),
             Substitution::new(Term::Expr(Expr::Number(1)), Term::Num),
             Substitution::new(Term::Expr(Expr::Number(2)), Term::Num),
