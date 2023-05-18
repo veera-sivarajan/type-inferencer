@@ -5,15 +5,14 @@ use crate::inference::*;
 use crate::types::*;
 
 fn main() {
-    let add1 = Expr::Number(1) + Expr::Number(3); 
-    let add2 = Expr::Number(2) + Expr::Number(4); 
+    let add1 = Expr::Number(1) + Expr::Number(3);
+    let add2 = Expr::Number(2) + Expr::Number(4);
     let exp = Expr::Conditional(IfExp::new(true.into(), add1, add2));
     println!("Input: {exp}");
     let subs = infer_types(&exp);
     for s in subs {
         println!("Sub: {s}");
     }
-
 }
 
 #[cfg(test)]

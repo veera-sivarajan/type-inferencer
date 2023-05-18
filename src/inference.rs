@@ -37,10 +37,7 @@ pub struct Substitution {
 
 impl Substitution {
     pub fn new(var: Term, is: Term) -> Self {
-        Self {
-            var,
-            is,
-        }
+        Self { var, is }
     }
 }
 
