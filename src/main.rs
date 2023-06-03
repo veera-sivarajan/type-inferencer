@@ -20,7 +20,12 @@ mod tests {
     use super::*;
 
     fn test(output: &[Substitution], expected: &[Substitution]) -> bool {
-        !expected.iter().any(|e| !output.contains(e))
+        for e in expected {
+            if !output.contains(e) {
+                return false;
+            }
+        }
+        true
     }
 
     #[test]
